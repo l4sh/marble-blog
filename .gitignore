@@ -1,3 +1,9 @@
+# Posts
+posts
+
+# Bower
+bower_components
+
 # Logs
 logs
 *.log

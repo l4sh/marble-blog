@@ -1,0 +1,33 @@
+{
+  "name": "blog_engine",
+  "version": "0.0.0",
+  "description": "Simple markdown blog engine designed to run completely on frontend",
+  "main": "index.html",
+  "keywords": [
+    "blog",
+    "engine",
+    "markdown",
+    "frontend"
+  ],
+  "authors": [
+    "l4sh"
+  ],
+  "license": "MIT",
+  "homepage": "http://example.org",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "~2.1.4",
+    "modernizr": "~2.8.3",
+    "normalize.css": "~3.0.3",
+    "bootstrap": "~3.3.4",
+    "font-awesome": "~4.3.0",
+    "marked": "~0.3.3",
+    "highlightjs": "~8.5.0"
+  }
+}

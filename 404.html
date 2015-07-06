@@ -1,0 +1,39 @@
+<head>
+  <title>404 Error - Page Not Found</title>
+  <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+  <div class="container e404">
+    <div class="col-md-8 col-md-offset-1">
+      <h1>404 Error: Page Not Found</h1>
+      <p>It seems like the content you're looking for cannot be found...</p>
+      <p>Or JavaScript is not enabled.</p>
+      <p>This site relies heavily on JavaScript. If your browser does not
+      support JavaScript or cannot enable it please visit the <a href="index.html">home</a>
+      page or the <a href="articles.html">articles</a> page so view the content.</p>
+
+    </div>
+  </div>
+  
+  <script src="bower_components/jquery/dist/jquery.min.js"></script>
+  <script src="config.js"></script>
+  <script src="posts.js"></script>
+  <script>
+    function loadContent() {
+      var url = window.location.href;
+      url = url.split('/');
+      url = url[url.length - 1];
+      // Check if post file exists
+      if (JSON.stringify(posts).indexOf(url + '.md') > 0){
+        // and update the url, title and body
+        var title = config.title + ' - ' + url.replace(/_/g, ' ');
+        document.title = title;
+        $('body').load('index.html')
+      }
+    };
+    (function(){
+      loadContent(); 
+    })();
+  </script>
+</body>

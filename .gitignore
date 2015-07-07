@@ -4,6 +4,9 @@ posts
 # Bower
 bower_components
 
+# Minified
+*.min.*
+
 # Logs
 logs
 *.log

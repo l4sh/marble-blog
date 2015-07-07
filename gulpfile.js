@@ -222,15 +222,22 @@ function addToPosts(fname) {
 
 //** render markup **//
 function markup(string) {
-  return mark.up(string, config);
+  console.log(string);
+  return string;
 };
 
 
 ////**** TASKS ****////
-
+stream = require('stream');
 //** Parse Templates **//
 gulp.task('rendertpl', function() {
   gulp.src('tpl/*.html')
+    .pipe($.fn(function(file){
+      // Insert user information with markup-js
+      var tpl = file._contents.toString('utf-8');
+      var rndr = mark.up(tpl, config);
+      file._contents.write(rndr, 'utf-8');
+    }))
     .pipe($.newer('./', {
       ext: 'html'
     }))

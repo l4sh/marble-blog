@@ -16,7 +16,7 @@ prompt.delimiter = '';
 
 //** Load Config **//
 var posts = require('./posts.json');
-var config = require('./config.json');
+require('./config.js');
 var draftsPath = config.blog.postsPath + config.blog.draftsFolder;
 var publishedPath = config.blog.postsPath + config.blog.publishedFolder;
 
@@ -214,7 +214,9 @@ function addToPosts(fname) {
     if (!info.id) {
       info.id = 0;
     }
-
+    var _fname = fname.split('/');
+    _fname = _fname[_fname.length -1];
+    info.file = _fname;
     postsJSON.unshift(info);
     fs.writeFileSync(postsJSONFile, JSON.stringify(postsJSON));
   })
@@ -436,7 +438,7 @@ gulp.task('remove-draft', function() {
 
 
 //** Initial setup **//
-gulp.task('setup', ['haml', 'vendorjs', 'vendorcss', 'mainjs',
+gulp.task('setup', ['rendertpl', 'vendorjs', 'vendorcss', 'mainjs',
   'maincss', 'fonts'
 ]);
 

@@ -1,4 +1,4 @@
-{
+config = {
   "author": {
     "name": "John Smith",
     "description": "Smith... John Smith.",
@@ -12,7 +12,7 @@
     "url": "https://l4sh.github.io",
     "lang": "en",
     "postsPerPage": 5,
-    "pagerPosition": "both",
+    "pagerPosition": "bottom",
     "postsJSON": "./posts.json",
     "excerptLength": 50,
     "postsPath": "posts/",

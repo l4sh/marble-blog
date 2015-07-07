@@ -1,10 +1,10 @@
-var ppp = 3;
+var ppp = config.blog.postsPerPage;
 var contentEl = '#blog-content';
-var postPath = 'posts/published/'
-var postListFile = 'posts/posts.json';
+var postPath = config.blog.postsPath + config.blog.publishedFolder + '/';
+var postListFile = config.blog.postsJSON;
 var postList;
 var curPos = 0; // Current position in post list
-var pagerPosition = 'top';
+var pagerPosition = config.blog.pagerPosition;
 var totalPosts; // Total amount of posts, available after postList load
 
 
@@ -164,13 +164,13 @@ function loadPager(position) {
 function setMediaLinks() {
   var _s = false;
 
-  for (i in author_info) {
+  for (i in config.author) {
     if (icons.web_icons[i]) {
       if (!_s) {
         var media_links = '<ul class="list-inline">';
         _s = true;
       }
-      media_links += '<li><a href="' + author_info[i] + '">';
+      media_links += '<li><a href="' + config.author[i] + '">';
       media_links += '<i class="fa ' + icons.web_icons[i] + '"></i></a></li>'
     }
   }
@@ -181,7 +181,7 @@ function setMediaLinks() {
   }
 };
 
-//** Author **//
+/** Author *
 function setAuthorInfo() {
 
   //Name
@@ -197,7 +197,7 @@ function setAuthorInfo() {
   setMediaLinks();
 };
 
-
+*/
 
 //**** MISC ****//
 
@@ -249,5 +249,5 @@ $(function() {
   });
 
   // Set the author information in sidebar
-  setAuthorInfo();
+  setMediaLinks();
 });

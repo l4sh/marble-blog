@@ -10,30 +10,39 @@ var totalPosts; // Total amount of posts, available after postList load
 
 //**** MAIN CONTENT ****//
 
+// Insert post into element
+function insertPost(postEl, postFile) {
+  var postFile = postFile || postList[curPos].file;
+
+  $.get(postPath + postFile).done(function(data) {
+
+    data = splitPostData(data);
+    var header = '<div class="post-header">';
+    header += parseHeader(data[0], postFile);
+    header += '</div>';
+
+    var body = '<div class="post-body">';
+    body += marked(data[1]); //MDtoHTML
+    body += '</div>';
+
+    // Insert content
+    $(postEl).html(header + body);
+  });
+};
+
+//** Load single post into main content element **//
+function loadSinglePost(postName) {
+  $(contentEl).html('');
+  var postFile = postName + '.md'
+  insertPost(contentEl, postFile);
+};
+
 //** Load posts into main content element **//
 function loadPosts() {
 
   if (curPos >= totalPosts) {
     return;
   }
-
-  function insertPost(postEl) {
-    $.get(postPath + postList[curPos].file).done(function(data) {
-
-      data = splitPostData(data);
-      console.log(data);
-      var header = '<div class="post-header">';
-      header += parseHeader(data[0]);
-      header += '</div>';
-
-      var body = '<div class="post-body">';
-      body += marked(data[1]); //MDtoHTML
-      body += '</div>';
-
-      // Insert content
-      $(postEl).html(header + body);
-    });
-  };
 
   $(contentEl).html('');
 
@@ -45,6 +54,8 @@ function loadPosts() {
     $(contentEl).append(div);
 
     insertPost('#' + postEl);
+
+    $(contentEl).append('<hr />');
 
     curPos++;
   }
@@ -102,13 +113,15 @@ function splitPostData(data) {
 
 
 //** Parse header and return HTML **//
-function parseHeader(data) {
+function parseHeader(data, postFile) {
   var htmlHeader = '';
+
+  postFile = postFile.split('.')[0];
 
   // If fields exist populate
   //// Title
   if (data.title) {
-    htmlHeader += '<h1>' + data.title + '</h1>'
+    htmlHeader += '<h1><a href="' + postFile + '">' + data.title + '</a></h1>';
   }
 
   htmlHeader += '<p>';
@@ -181,23 +194,6 @@ function setMediaLinks() {
   }
 };
 
-/** Author *
-function setAuthorInfo() {
-
-  //Name
-  if (author_info.name) {
-    $('.author-name').html(author_info.name);
-  }
-
-  //Description
-  if (author_info.description) {
-    $('.author-description').html(author_info.description);
-  }
-
-  setMediaLinks();
-};
-
-*/
 
 //**** MISC ****//
 
@@ -222,32 +218,30 @@ function size(iter) {
 
 //**** RUN ON LOAD ****//
 $(function() {
+  if (typeof e404 == 'undefined') {
+    // Get the post list and load posts
+    $.getJSON(postListFile).done(function(data) {
+      postList = data;
+      totalPosts = size(postList);
+      loadPosts();
+    });
 
-  // Get the post list and load posts
-  $.getJSON(postListFile).done(function(data) {
-    postList = data;
-    totalPosts = size(postList);
-    loadPosts();
-  });
-
-  // Load the author information
-
-  // Load the pager
-  loadPager(pagerPosition);
-  // Watch pager clicks and load previous/next page
-  $('.pager').on('click', '.pager-previous', function() {
-    curPos = curPos - (ppp * 2);
-    if (curPos < 0) {
-      curPos = 0;
-    }
-    loadPosts();
-    console.log(curPos + 'p');
-  });
-  $('.pager').on('click', '.pager-next', function() {
-    loadPosts();
-    console.log(curPos);
-  });
-
+    // Load the pager
+    loadPager(pagerPosition);
+    // Watch pager clicks and load previous/next page
+    $('.pager').on('click', '.pager-previous', function() {
+      curPos = curPos - (ppp * 2);
+      if (curPos < 0) {
+        curPos = 0;
+      }
+      loadPosts();
+    });
+    $('.pager').on('click', '.pager-next', function() {
+      loadPosts();
+    });
+  } else {
+    loadSinglePost(url);
+  }
   // Set the author information in sidebar
   setMediaLinks();
 });

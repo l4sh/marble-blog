@@ -65,6 +65,9 @@ function menu(menuTitle, menuItems, callback) {
         console.log(err);
         return;
 
+      } else if (answer.item == 0) {
+        process.exit();
+
       } else if (answer.item > menuItems.length) {
         // Re-run on invalid input
         console.log('error'.red + ':   Invalid option');
@@ -176,7 +179,7 @@ function getPostInfo(fname, callback) {
   var excerpt = body.split(' ').slice(0, config.blog.excerptLength);
   excerpt = excerpt.join(' ');
   info['excerpt'] = excerpt;
-  
+
 
   if (callback && typeof(callback) === 'function') {
     callback(info);
@@ -197,7 +200,7 @@ function genPostId() {
   }
 
   var lastPostId = Math.max.apply(Math, ids);
-  postId = Number(lastPostId) +1
+  postId = Number(lastPostId) + 1
   return postId;
 }
 
@@ -209,13 +212,13 @@ function addToPosts(fname) {
 
   getPostInfo(fname, function(info) {
     // Insert post id
-    info.id = genPostId(postsJSON);
+    info.id = genPostId();
     console.log(info.id);
     if (!info.id) {
       info.id = 0;
     }
     var _fname = fname.split('/');
-    _fname = _fname[_fname.length -1];
+    _fname = _fname[_fname.length - 1];
     info.file = _fname;
     postsJSON.unshift(info);
     fs.writeFileSync(postsJSONFile, JSON.stringify(postsJSON));
@@ -234,7 +237,7 @@ stream = require('stream');
 //** Parse Templates **//
 gulp.task('rendertpl', function() {
   gulp.src('tpl/*.html')
-    .pipe($.fn(function(file){
+    .pipe($.fn(function(file) {
       // Insert user information with markup-js
       var tpl = file._contents.toString('utf-8');
       var rndr = mark.up(tpl, config);
@@ -243,7 +246,7 @@ gulp.task('rendertpl', function() {
     .pipe($.newer('./', {
       ext: 'html'
     }))
-//    .pipe($.haml())
+    //    .pipe($.haml())
     .pipe(gulp.dest('./'));
 });
 
@@ -384,6 +387,7 @@ gulp.task('create', function() {
 
     var postContent = '---\n';
     postContent += 'title: ' + answer.title + '\n';
+    postContent += 'id: {{id}}\n';
     postContent += 'description: ' + (answer.description || '') + '\n'
     postContent += 'author: ' + config.author.name + '\n'
     postContent += 'category: ' + answer.category + '\n';
@@ -410,7 +414,18 @@ gulp.task('publish', function() {
   menu('SELECT DRAFT TO PUBLISH', draftsList, function(draftNumber) {
 
     var fileToPublish = draftsPath + '/' + draftsList[draftNumber];
-    gulp.src(fileToPublish).pipe(gulp.dest(publishedPath));
+    gulp.src(fileToPublish)
+      .pipe($.fn(function(file) {
+        // Insert post id with markup-js
+        var postContent = file._contents.toString('utf-8');
+        var post = {
+          id: genPostId()
+        };
+
+        var postContent = mark.up(postContent, post);
+        file._contents.write(postContent, 'utf-8');
+      }))
+      .pipe(gulp.dest(publishedPath));
 
     // Add published post to posts.json
     addToPosts(fileToPublish);

@@ -1,4 +1,4 @@
-// Much improvement to be done here
+'use strict';
 
 var gulp = require('gulp');
 var $ = require('gulp-load-plugins')();

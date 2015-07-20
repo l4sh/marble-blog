@@ -1,15 +1,16 @@
 config = {
   "author": {
-    "name": "John Smith",
-    "description": "Smith... John Smith.",
-    "twitter": "https://twitter.com/twitter.com"
+    "name": "MARBLE Author",
+    "description": "I post things, a lot of things",
+    "twitter_handle": "@my_twitter_handle",
+    "twitter": "https://twitter.com/twitter"
   },
 
   "blog": {
     "title": "My MARBLE blog",
-    "subtitle": "A nifty nafty blog",
-    "description": "Brief blog description",
-    "url": "https://l4sh.github.io",
+    "subtitle": "A MARkdown dynamic BLog Engine",
+    "description": "This is a blog running MARBLE, if you are the author of this blog you might want to update this information.",
+    "url": "https://github.com/l4sh/marble-blog",
     "lang": "en",
     "postsPerPage": 5,
     "pagerPosition": "bottom",

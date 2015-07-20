@@ -1,0 +1,32 @@
+<!doctype html>
+<html class="no-js" lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>My MARBLE blog</title>
+  <meta name="description" content="Brief blog description">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+  <!--CSS-->
+  <link rel="stylesheet" href="css/vendor.min.css">
+  <link rel="stylesheet" href="css/main.min.css">
+  <script src="config.js"></script>
+</head>
+<body>
+  <div class="container e404">
+    <div class="col-md-8 col-md-offset-1">
+      <h1>404 Error: Page Not Found</h1>
+      <p>It seems like the content you're looking for cannot be found...</p>
+      <p>Or JavaScript is not enabled.</p>
+      <p>This site relies heavily on JavaScript. If your browser does not
+      support JavaScript or cannot enable it please visit the <a href="index.html">home</a>
+      page or the <a href="articles.html">articles</a> page so view the content.</p>
+
+    </div>
+  </div>
+  
+  <script src="js/vendor.min.js"></script>
+  <script src="js/404.js"></script>
+</body>
+</html>

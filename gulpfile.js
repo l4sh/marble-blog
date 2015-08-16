@@ -7,6 +7,7 @@ var mkdir = require('mkdir-p');
 var fs = require('fs');
 var colors = require('colors');
 var mark = require('markup-js');
+var stream = require('stream');
 
 //** Prompt **//
 var prompt = require('prompt');
@@ -16,20 +17,20 @@ prompt.delimiter = '';
 
 //** Load Config **//
 var posts = require('./posts.json');
-require('./config.js');
+var config = require('./config.js');
 var draftsPath = config.blog.postsPath + config.blog.draftsFolder;
 var publishedPath = config.blog.postsPath + config.blog.publishedFolder;
 
 
 //** Run external editor **//
 function editor(file) {
-  child_process = require('child_process');
-  var editor = config.editor || process.env.EDITOR || 'vi';
+  var childProcess = require('child_process');
+  var e = config.editor || process.env.EDITOR || 'vi';
 
-  var child = child_process.spawn(editor, [file], {
+  childProcess.spawn(e, [file], {
     stdio: 'inherit'
   });
-};
+}
 
 
 //** Menu **//
@@ -37,10 +38,10 @@ function menu(menuTitle, menuItems, callback) {
 
   // Display title
   console.log('\n' + menuTitle.red.bold);
-  console.log(Array(menuTitle.length + 1).join('=').magenta.bold);
+  console.log(new Array(menuTitle.length + 1).join('=').magenta.bold);
 
   // Show list of items
-  for (item in menuItems) {
+  for (var item in menuItems) {
     var itemNumber = '  ' + (Number(item) + 1) + ') ';
     var itemText = menuItems[item].split('.')[0];
 
@@ -81,7 +82,7 @@ function menu(menuTitle, menuItems, callback) {
   };
 
   getInput();
-};
+}
 
 
 //** Confirm prompt **//
@@ -99,7 +100,7 @@ function inputConfirm(callback) {
       return;
     }
 
-    result = /^[y|Y]/.test(answer.confirm);
+    var result = /^[y|Y]/.test(answer.confirm);
 
     if (callback && typeof(callback) === 'function') {
       if (result) {
@@ -107,7 +108,7 @@ function inputConfirm(callback) {
       }
     }
   });
-};
+}
 
 
 //** Format filename **//
@@ -136,12 +137,12 @@ function formatFname(string) {
   // Format to lower case and strip accents, etc.
   string = string.toLowerCase();
 
-  for (i in reChars) {
+  for (var i in reChars) {
     string = string.replace(reChars[i].replace, reChars[i].plain);
   }
 
   return string;
-};
+}
 
 
 
@@ -149,14 +150,14 @@ function formatFname(string) {
 function getPostInfo(fname, callback) {
 
   var data = fs.readFileSync(fname, 'utf-8');
-  var data = data.split(/^---\n|\n---\n/);
+  data = data.split(/^---\n|\n---\n/);
   var headerData = data[1];
   var body = data[2];
 
   headerData = headerData.split('\n');
   var info = {};
 
-  for (i in headerData) {
+  for (var i in headerData) {
 
     if (headerData[i]) {
       var _t = headerData[i].split(':');
@@ -166,7 +167,7 @@ function getPostInfo(fname, callback) {
       // Tags go to an array
       if (key === 'tags') {
         val = val.split(',');
-        for (a in val) {
+        for (var a in val) {
           val[a] = val[a].trim();
         }
       }
@@ -178,7 +179,7 @@ function getPostInfo(fname, callback) {
   // Create excerpt
   var excerpt = body.split(' ').slice(0, config.blog.excerptLength);
   excerpt = excerpt.join(' ');
-  info['excerpt'] = excerpt;
+  info.excerpt = excerpt;
 
 
   if (callback && typeof(callback) === 'function') {
@@ -200,7 +201,7 @@ function genPostId() {
   }
 
   var lastPostId = Math.max.apply(Math, ids);
-  postId = Number(lastPostId) + 1
+  postId = Number(lastPostId) + 1;
   return postId;
 }
 
@@ -222,31 +223,25 @@ function addToPosts(fname) {
     info.file = _fname;
     postsJSON.unshift(info);
     fs.writeFileSync(postsJSONFile, JSON.stringify(postsJSON));
-  })
-};
-
-//** render markup **//
-function markup(string) {
-  console.log(string);
-  return string;
-};
+  });
+}
 
 
 ////**** TASKS ****////
-stream = require('stream');
 //** Parse Templates **//
 gulp.task('rendertpl', function() {
   gulp.src('tpl/*.html')
     .pipe($.fn(function(file) {
       // Insert user information with markup-js
-      var tpl = file._contents.toString('utf-8');
+      var tpl = file._contents.toString('utf8');
       var rndr = mark.up(tpl, config);
-      file._contents.write(rndr, 'utf-8');
+
+      file._contents = new Buffer(rndr, 'utf8');
+
     }))
     .pipe($.newer('./', {
       ext: 'html'
     }))
-    //    .pipe($.haml())
     .pipe(gulp.dest('./'));
 });
 
@@ -334,13 +329,26 @@ gulp.task('fonts', function() {
 });
 
 
-//** Edit post **//
-gulp.task('edit', function() {
+//** Edit draft **//
+gulp.task('edit-draft', function() {
 
   var draftsList = fs.readdirSync(draftsPath);
 
-  menu('SELECT DRAFT', draftsList, function(draftNumber) {
-    var fileToEdit = draftsPath + '/' + draftsList[draftNumber];
+  menu('SELECT DRAFT', draftsList, function(n) {
+    var fileToEdit = draftsPath + '/' + draftsList[n];
+
+    editor(fileToEdit);
+  });
+});
+
+
+//** Edit published **//
+gulp.task('edit-pub', function() {
+
+  var publishedList = fs.readdirSync(publishedPath);
+
+  menu('SELECT POST', publishedList, function(n) {
+    var fileToEdit = publishedPath + '/' + publishedList[n];
 
     editor(fileToEdit);
   });
@@ -372,10 +380,10 @@ gulp.task('create', function() {
   }, {
     name: 'description',
     message: 'Description:'.green
-  }]
+  }];
 
   var postFormat = '---\ntitle: %TITLE%\ndescription: %DESCRIPTION%'
-  postFormat += 'author: %AUTHOR%\ncategory: %CATEGORY%\ntags: %TAGS%\n---'
+  postFormat += 'author: %AUTHOR%\ncategory: %CATEGORY%\ntags: %TAGS%\n---';
 
 
   prompt.get(properties, function(err, answer) {
@@ -388,11 +396,11 @@ gulp.task('create', function() {
     var postContent = '---\n';
     postContent += 'title: ' + answer.title + '\n';
     postContent += 'id: {{id}}\n';
-    postContent += 'description: ' + (answer.description || '') + '\n'
-    postContent += 'author: ' + config.author.name + '\n'
+    postContent += 'description: ' + (answer.description || '') + '\n';
+    postContent += 'author: ' + config.author.name + '\n';
     postContent += 'category: ' + answer.category + '\n';
     postContent += 'tags: ' + (answer.tags || '') + '\n';
-    postContent += '---\n'
+    postContent += '---\n';
 
     var fileName = draftsPath + '/' + formatFname(answer.title) + '.md';
 
@@ -401,7 +409,7 @@ gulp.task('create', function() {
   });
 
 
-})
+});
 
 
 //** Publish post **//
@@ -422,7 +430,7 @@ gulp.task('publish', function() {
           id: genPostId()
         };
 
-        var postContent = mark.up(postContent, post);
+        postContent = mark.up(postContent, post);
         file._contents.write(postContent, 'utf-8');
       }))
       .pipe(gulp.dest(publishedPath));
@@ -450,6 +458,20 @@ gulp.task('remove-draft', function() {
   });
 });
 
+
+//** Remove published post **//
+gulp.task('remove-pub', function() {
+  var publishedList = fs.readdirSync(publishedPath);
+
+  menu('SELECT POST TO DELETE', publishedList, function(n) {
+    var fileToDelete = publishedPath + '/' + publishedList[n];
+
+    inputConfirm(function() {
+      del(fileToDelete);
+      console.log(('Deleted ' + publishedList[n]).red.bold);
+    });
+  });
+});
 
 
 //** Initial setup **//

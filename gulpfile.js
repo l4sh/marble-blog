@@ -8,6 +8,7 @@ var fs = require('fs');
 var colors = require('colors');
 var mark = require('markup-js');
 var stream = require('stream');
+var path = require('path');
 
 //** Prompt **//
 var prompt = require('prompt');
@@ -18,8 +19,6 @@ prompt.delimiter = '';
 //** Load Config **//
 var posts = require('./posts.json');
 var config = require('./config.js');
-var draftsPath = config.blog.postsPath + config.blog.draftsFolder;
-var publishedPath = config.blog.postsPath + config.blog.publishedFolder;
 
 
 //** Run external editor **//
@@ -181,15 +180,19 @@ function getPostInfo(fname, callback) {
   excerpt = excerpt.join(' ');
   info.excerpt = excerpt;
 
-
-  if (callback && typeof(callback) === 'function') {
-    callback(info);
+  // Get post ID
+  info.id = genPostId();
+  if (!info.id) {
+    info.id = 0;
   }
+
+  return info;
 }
 
 
-//** Get the ID of the last post **//
+//** Generate post ID number **//
 function genPostId() {
+  // Get the ID number of the last post and return the ID for the current post
   var postsJSON = posts;
   var postId = 0;
   var ids = postsJSON.map(function(post) {
@@ -207,27 +210,28 @@ function genPostId() {
 
 
 //** Add published post to posts.json **//
-function addToPosts(fname) {
-  var postsJSON = posts;
-  var postsJSONFile = config.blog.postsJSON;
+function addToPosts(fileName) {
+  var info = getPostInfo(fileName);
 
-  getPostInfo(fname, function(info) {
-    // Insert post id
-    info.id = genPostId();
-    console.log(info.id);
-    if (!info.id) {
-      info.id = 0;
-    }
-    var _fname = fname.split('/');
-    _fname = _fname[_fname.length - 1];
-    info.file = _fname;
-    postsJSON.unshift(info);
-    fs.writeFileSync(postsJSONFile, JSON.stringify(postsJSON));
-  });
+  info.file = path.basename(fileName);
+  posts.unshift(info);
+
+  fs.writeFileSync(config.blog.postsJSON, JSON.stringify(posts));
 }
 
+function renderPost(post) {
+  gulp.src(path.join(config.blog.templatesFolder, 'post.html'))
+    .pipe($.fn(function(file){
+      var template = file._contentss.toString('utf8');
+      var render = mark.up(template, config);
+      file._contents = new Buffer(render, 'utf8');
+    }))
+    .pipe(gulp.dest(config.blog.postsFolder))
+}
 
 ////**** TASKS ****////
+
+
 //** Parse Templates **//
 gulp.task('rendertpl', function() {
   gulp.src('tpl/*.html')
@@ -319,6 +323,7 @@ gulp.task('maincss', function() {
     .pipe(gulp.dest('css'));
 });
 
+
 //** Copy fonts to fonts folder **//
 gulp.task('fonts', function() {
   gulp.src('**/fonts/**/*.{ttf,woff,woff2,eof,svg}', {
@@ -332,11 +337,10 @@ gulp.task('fonts', function() {
 //** Edit draft **//
 gulp.task('edit-draft', function() {
 
-  var draftsList = fs.readdirSync(draftsPath);
+  var drafts = fs.readdirSync(config.blog.draftsFolder);
 
-  menu('SELECT DRAFT', draftsList, function(n) {
-    var fileToEdit = draftsPath + '/' + draftsList[n];
-
+  menu('SELECT DRAFT', drafts, function(n) {
+    var fileToEdit = path.join(config.blog.draftsFolder, drafts[n]);
     editor(fileToEdit);
   });
 });
@@ -345,11 +349,10 @@ gulp.task('edit-draft', function() {
 //** Edit published **//
 gulp.task('edit-pub', function() {
 
-  var publishedList = fs.readdirSync(publishedPath);
+  var published = fs.readdirSync(config.blog.publishedFolder);
 
-  menu('SELECT POST', publishedList, function(n) {
-    var fileToEdit = publishedPath + '/' + publishedList[n];
-
+  menu('SELECT POST', published , function(n) {
+    var fileToEdit = path.join(config.blog.publishedFolder, published[n]);
     editor(fileToEdit);
   });
 });
@@ -357,7 +360,8 @@ gulp.task('edit-pub', function() {
 
 //** Create post **//
 gulp.task('create', function() {
-  mkdir(draftsPath);
+
+  mkdir(config.blog.draftsFolder);
 
   var properties = [{
     name: 'title',
@@ -402,7 +406,8 @@ gulp.task('create', function() {
     postContent += 'tags: ' + (answer.tags || '') + '\n';
     postContent += '---\n';
 
-    var fileName = draftsPath + '/' + formatFname(answer.title) + '.md';
+    var fileName = path.join(config.blog.draftsFolder,
+                             formatFname(answer.title) + '.md');
 
     fs.writeFileSync(fileName, postContent);
     editor(fileName);
@@ -415,45 +420,45 @@ gulp.task('create', function() {
 //** Publish post **//
 gulp.task('publish', function() {
 
-  mkdir(publishedPath);
+  mkdir(config.blog.publishedFolder);
 
-  var draftsList = fs.readdirSync(draftsPath);
+  var drafts = fs.readdirSync(config.blog.draftsFolder);
 
-  menu('SELECT DRAFT TO PUBLISH', draftsList, function(draftNumber) {
+  menu('SELECT DRAFT TO PUBLISH', drafts, function(n) {
 
-    var fileToPublish = draftsPath + '/' + draftsList[draftNumber];
+    var fileToPublish = path.join(config.blog.draftsFolder, drafts[n]);
+
     gulp.src(fileToPublish)
       .pipe($.fn(function(file) {
-        // Insert post id with markup-js
-        var postContent = file._contents.toString('utf-8');
-        var post = {
+        // Insert post id
+        var content = file._contents.toString('utf-8');
+        var info = {
           id: genPostId()
         };
 
-        postContent = mark.up(postContent, post);
-        file._contents.write(postContent, 'utf-8');
+        content = mark.up(content, info);
+        file._contents.write(content, 'utf-8');
       }))
-      .pipe(gulp.dest(publishedPath));
+      .pipe(gulp.dest(config.blog.publishedFolder));
 
     // Add published post to posts.json
     addToPosts(fileToPublish);
     // Delete draft once published
     del(fileToPublish);
   });
-
 });
 
 
 //** Remove draft **//
 gulp.task('remove-draft', function() {
-  var draftsList = fs.readdirSync(draftsPath);
+  var draftsList = fs.readdirSync(config.blog.draftsFolder);
 
-  menu('SELECT DRAFT TO DELETE', draftsList, function(draftNumber) {
-    var fileToDelete = draftsPath + '/' + draftsList[draftNumber];
+  menu('SELECT DRAFT TO DELETE', drafts, function(n) {
+    var fileToDelete = path.join(configure.blog.draftsFolder, drafts[n]);
 
     inputConfirm(function() {
       del(fileToDelete);
-      console.log(('Deleted ' + draftsList[draftNumber]).red.bold);
+      console.log(('Deleted ' + drafts[n]).red.bold);
     });
   });
 });
@@ -461,10 +466,10 @@ gulp.task('remove-draft', function() {
 
 //** Remove published post **//
 gulp.task('remove-pub', function() {
-  var publishedList = fs.readdirSync(publishedPath);
+  var published = fs.readdirSync(config.blog.publishedFolder);
 
-  menu('SELECT POST TO DELETE', publishedList, function(n) {
-    var fileToDelete = publishedPath + '/' + publishedList[n];
+  menu('SELECT POST TO DELETE', published, function(n) {
+    var fileToDelete = path.join(config.blog.publishedFolder, published[n]);
 
     inputConfirm(function() {
       del(fileToDelete);

@@ -225,14 +225,19 @@ function addToPosts(fileName, postInfo) {
   fs.writeFileSync(config.blog.postsJSON, JSON.stringify(posts));
 }
 
-function renderPost(post) {
+function renderPostStatic(postInfo) {
+  var info = {post: postInfo, blog: config.blog, author: config.author};
+
   gulp.src(path.join(config.blog.templatesFolder, 'post.html'))
     .pipe($.fn(function(file){
-      var template = file._contentss.toString('utf8');
-      var render = mark.up(template, config);
+      var template = file._contents.toString('utf8');
+      var render = mark.up(template, info);
       file._contents = new Buffer(render, 'utf8');
+      console.log(file._contents);
     }))
-    .pipe(gulp.dest(config.blog.postsFolder))
+    .pipe($.rename({dirname: path.parse(postInfo.file).name,
+                    basename: 'index', extname: '.html'}))
+    .pipe(gulp.dest(config.blog.postsFolder));
 }
 
 ////**** TASKS ****////
@@ -447,8 +452,14 @@ gulp.task('publish', function() {
       }))
       .pipe(gulp.dest(config.blog.publishedFolder));
 
+      var postInfo = getPostInfo(fileToPublish);
+
+      console.log(postInfo);
+
     // Add published post to posts.json
-    addToPosts(fileToPublish);
+    addToPosts(fileToPublish, postInfo);
+    // Create post.html
+    renderPostStatic(postInfo);
     // Delete draft once published
     del(fileToPublish);
   });

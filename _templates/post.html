@@ -1,0 +1,34 @@
+<!doctype html>
+<html class="no-js" lang="{{blog.lang}}">
+
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="x-ua-compatible" content="ie=edge" />
+  <title>{{blog.title}} - {{post.title}}</title>
+  <meta name="description" content="{{post.description}}" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="og:site_name" content="{{blog.title}}" />
+  <meta name="og:title" content="{{blog.title}} - {{post.title}}" />
+  <meta name="og:description" content="{{post.description}}" />
+  <meta name="og:type" content="article" />
+  <meta name="og:url" content="{{post.url}}" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:site" content="{{author.twitter}}" />
+  <meta name="twitter:title" content="{{blog.title}} - {{post.title}}" />
+  <meta name="twitter:description" content="{{post.description}}" />
+
+  <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+  <!--CSS-->
+  <link rel="stylesheet" href="css/vendor.min.css">
+  <link rel="stylesheet" href="css/main.min.css">
+  <script src="config.js"></script>
+</head>
+
+<body>
+  <h1>{{post.title}}</h1>
+  <p>{{post.description}}...</p>
+  <noscript><p>To read more you must enable javascript</p></noscript>
+</body>
+</html>

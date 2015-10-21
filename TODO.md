@@ -2,4 +2,6 @@
 [] Sitemap
 [] RSS feed
 [] Atom feed
+[] Disqus support
+[] Generate humans.txt
 [] Multilang blog

@@ -218,11 +218,9 @@ function genPostId() {
 
 
 //** Add published post to posts.json **//
-function addToPosts(fileName) {
-  var info = getPostInfo(fileName);
+function addToPosts(fileName, postInfo) {
 
-  info.file = path.basename(fileName);
-  posts.unshift(info);
+  posts.unshift(postInfo);
 
   fs.writeFileSync(config.blog.postsJSON, JSON.stringify(posts));
 }

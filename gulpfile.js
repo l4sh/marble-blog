@@ -146,15 +146,15 @@ function formatFname(string) {
 
 
 //** Read post and get header info**//
-function getPostInfo(fname, callback) {
+function getPostInfo(fileName) {
 
-  var data = fs.readFileSync(fname, 'utf-8');
+  var data = fs.readFileSync(fileName, 'utf-8');
   data = data.split(/^---\n|\n---\n/);
   var headerData = data[1];
   var body = data[2];
 
   headerData = headerData.split('\n');
-  var info = {};
+  var postInfo = {};
 
   for (var i in headerData) {
 
@@ -171,22 +171,30 @@ function getPostInfo(fname, callback) {
         }
       }
 
-      info[key] = val;
+      // Generate post excerpt if no description or too short
+      if (key === 'description' && val.length < 10) {
+        val = body.split(' ').slice(0, config.blog.excerptLength);
+        val = val.join(' ').replace(/\n/g, ' ').trim();
+      }
+
+      postInfo[key] = val;
     }
   }
 
-  // Create excerpt
-  var excerpt = body.split(' ').slice(0, config.blog.excerptLength);
-  excerpt = excerpt.join(' ');
-  info.excerpt = excerpt;
+  // Add filename
+  postInfo.file = path.basename(fileName);
+
+  // Add post URL
+  postInfo.url = path.join(config.blog.url, config.blog.postsFolder,
+                           path.parse(postInfo.file).name)
 
   // Get post ID
-  info.id = genPostId();
-  if (!info.id) {
-    info.id = 0;
+  postInfo.id = genPostId();
+  if (!postInfo.id) {
+    postInfo.id = 0;
   }
 
-  return info;
+  return postInfo;
 }
 
 

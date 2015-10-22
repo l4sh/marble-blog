@@ -1,4 +1,4 @@
-icons = {
+var icons = {
   genderIcons: {
     male: 'mars',
     female: 'venus',
@@ -44,5 +44,4 @@ icons = {
     behance: 'fa-behance',
     leanpub: 'fa-leanpub'
   }
-
 };

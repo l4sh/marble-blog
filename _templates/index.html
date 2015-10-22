@@ -19,11 +19,11 @@
   <meta name="twitter:title" content="{{blog.title}}" />
   <meta name="twitter:description" content="{{blog.description}}" />
 
-  <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+  <link rel="apple-touch-icon" href="/img/apple-touch-icon.png">
   <!--CSS-->
-  <link rel="stylesheet" href="css/vendor.min.css">
-  <link rel="stylesheet" href="css/main.min.css">
-  <script src="config.js"></script>
+  <link rel="stylesheet" href="/css/vendor.min.css">
+  <link rel="stylesheet" href="/css/main.min.css">
+  <script src="/config.js"></script>
 </head>
 
 <body>
@@ -33,7 +33,7 @@
 
   <div class="container">
     <div class="jumbotron text-center">
-      <h1><a href="{{blog.url}}">{{blog.title}}</a></h1>
+      <h1><a href="/">{{blog.title}}</a></h1>
       <p class="lead hidden-xs hidden-sm">
         {{blog.subtitle}}
       </p>
@@ -48,6 +48,7 @@
           <!--placeholder for pager-->
         </div>
         <div id="blog-content">
+          <noscript><p>JavaScript support is necessary to view this blog content</p></noscript>
         </div>
         <hr />
         <div class="pager-bottom">
@@ -59,7 +60,7 @@
       <div class="col-md-3 hidden-sm">
         <div class="row">
           <div class="col-md-12 text-center author-info">
-            <img class="img-circle center-block author-image" src="img/author.png">
+            <img class="img-circle center-block author-image" src="/images/blog/author.png">
             <h3 class="author-name">
               {{author.name}}
             </h3>
@@ -85,8 +86,8 @@
   <!-- end AppContent -->
 
   <!-- Load JavaScript -->
-  <script src="js/vendor.min.js"></script>
-  <script src="js/main.min.js"></script>
+  <script src="/js/vendor.min.js"></script>
+  <script src="/js/main.min.js"></script>
 
   <!-- Google Analytics: change UA-XXXXX-X to be your site's ID. ->
   <script>

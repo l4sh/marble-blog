@@ -8,27 +8,30 @@
   <meta name="description" content="{{post.description}}" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <meta name="og:site_name" content="{{blog.title}}" />
-  <meta name="og:title" content="{{blog.title}} - {{post.title}}" />
-  <meta name="og:description" content="{{post.description}}" />
-  <meta name="og:type" content="article" />
-  <meta name="og:url" content="{{post.url}}" />
+  <meta property="og:site_name" content="{{blog.title}}" />
+  <meta property="og:title" content="{{blog.title}} - {{post.title}}" />
+  <meta property="og:description" content="{{post.description}}" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="{{post.url}}" />
 
-  <meta name="twitter:card" content="summary" />
-  <meta name="twitter:site" content="{{author.twitter}}" />
-  <meta name="twitter:title" content="{{blog.title}} - {{post.title}}" />
-  <meta name="twitter:description" content="{{post.description}}" />
+  <meta property="twitter:card" content="summary" />
+  <meta property="twitter:site" content="{{author.twitter}}" />
+  <meta property="twitter:title" content="{{blog.title}} - {{post.title}}" />
+  <meta property="twitter:description" content="{{post.description}}" />
 
-  <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+  <link rel="apple-touch-icon" href="/img/apple-touch-icon.png">
   <!--CSS-->
-  <link rel="stylesheet" href="css/vendor.min.css">
-  <link rel="stylesheet" href="css/main.min.css">
-  <script src="config.js"></script>
+  <link rel="stylesheet" href="/css/vendor.min.css">
+  <link rel="stylesheet" href="/css/main.min.css">
+
+  <script src="/config.js"></script>
 </head>
 
 <body>
   <h1>{{post.title}}</h1>
   <p>{{post.description}}...</p>
   <noscript><p>To read more you must enable javascript</p></noscript>
+  <script src="/js/vendor.min.js"></script>
+  <script src="/js/loadpost.js"></script>
 </body>
 </html>

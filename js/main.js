@@ -2,8 +2,8 @@
 
 var ppp = config.blog.postsPerPage;
 var contentEl = '#blog-content';
-var postPath = config.blog.postsPath + config.blog.publishedFolder + '/';
-var postListFile = config.blog.postsJSON;
+var postPath = '/' + config.blog.publishedFolder;
+var postListFile = '/' + config.blog.postsJSON;
 var postList;
 var curPos = 0; // Current position in post list
 var pagerPosition = config.blog.pagerPosition;
@@ -21,6 +21,10 @@ function parseDate(dateStr) {
   return date;
 }
 
+//** Join paths **//
+function pathJoin() {
+  return Array.slice(arguments).join('/');
+}
 
 //** Get array and object size **//
 function size(iter) {
@@ -61,7 +65,8 @@ function parseHeader(data, postFile) {
   // If fields exist populate
   //// Title
   if (data.title) {
-    htmlHeader += '<h1><a href="' + postFile + '">' + data.title + '</a></h1>';
+    htmlHeader += '<h1><a href="/' + pathJoin(config.blog.postsFolder, postFile);
+    htmlHeader += '">' + data.title + '</a></h1>';
   }
 
   htmlHeader += '<p>';
@@ -83,11 +88,13 @@ function parseHeader(data, postFile) {
   }
 
   // Tags
+  /** TODO: Support tags
   if (size(data.tags) > 0) {
     $.each(data.tags, function(k, tag) {
       htmlHeader += ' <div class="post-tag">' + tag + '</div>';
     });
   }
+  **/
 
   htmlHeader += '</p>';
 
@@ -132,7 +139,7 @@ function splitPostData(data) {
 function insertPost(postEl, postFile) {
   postFile = postFile || postList[curPos].file;
 
-  $.get(postPath + postFile).done(function(data) {
+  $.get(pathJoin(postPath, postFile)).done(function(data) {
 
     data = splitPostData(data);
     var header = '<div class="post-header">';
@@ -150,9 +157,8 @@ function insertPost(postEl, postFile) {
 
 
 //** Load single post into main content element **//
-function loadSinglePost(postName) {
+function loadSinglePost(postFile) {
   $(contentEl).html('');
-  var postFile = postName + '.md';
   insertPost(contentEl, postFile);
 }
 
@@ -232,7 +238,7 @@ function setMediaLinks() {
 
 //**** RUN ON LOAD ****//
 $(function() {
-  if (typeof e404 === 'undefined') {
+  if (typeof isPost === 'undefined') {
     // Get the post list and load posts
     $.getJSON(postListFile).done(function(data) {
       postList = data;
@@ -254,7 +260,7 @@ $(function() {
       loadPosts();
     });
   } else {
-    loadSinglePost(url);
+    loadSinglePost(postFileName);
   }
   // Set the author information in sidebar
   setMediaLinks();

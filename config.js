@@ -14,14 +14,17 @@ var config = {
     lang: 'en',
     postsPerPage: 5,
     pagerPosition: 'bottom',
-    postsJSON: './posts.json',
+    postsJSON: 'posts.json',
     excerptLength: 50,
-    postsPath: 'posts/',
-    draftsFolder: 'drafts',
-    publishedFolder: 'published'
+    postsFolder: 'posts',
+    draftsFolder: '_drafts',
+    publishedFolder: '_posts',
+    templatesFolder: '_templates'
   },
 
   editor: 'vim'
 };
 
-module.exports = config
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = config;
+}

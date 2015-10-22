@@ -190,9 +190,6 @@ function getPostInfo(fileName) {
 
   // Get post ID
   postInfo.id = genPostId();
-  if (!postInfo.id) {
-    postInfo.id = 0;
-  }
 
   return postInfo;
 }
@@ -213,6 +210,11 @@ function genPostId() {
 
   var lastPostId = Math.max.apply(Math, ids);
   postId = Number(lastPostId) + 1;
+
+  if (!postId) {
+    postId = 0;
+  }
+
   return postId;
 }
 
@@ -245,7 +247,7 @@ function renderPostStatic(postInfo) {
 
 //** Parse Templates **//
 gulp.task('rendertpl', function() {
-  gulp.src('tpl/*.html')
+  gulp.src(['*.html', '!post.html'], {cwd: '_templates/'})
     .pipe($.fn(function(file) {
       // Insert user information with markup-js
       var tpl = file._contents.toString('utf8');
@@ -285,7 +287,7 @@ gulp.task('mainjs', function() {
       'main.js',
       '**/*.js',
       '!*.min.js',
-      '!404.js' //404 should only be loaded on 404 pages
+      '!loadpost.js' //to be loaded only in post pages
     ], {
       cwd: 'js/'
     })

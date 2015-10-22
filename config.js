@@ -25,4 +25,6 @@ var config = {
   editor: 'vim'
 };
 
-module.exports = config
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = config;
+}

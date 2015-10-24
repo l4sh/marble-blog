@@ -1,0 +1,13 @@
+[X] Static post files with opengraph metadata
+[] Sitemap
+[] RSS feed
+[] Atom feed
+[] Widget support (set spots to embed widgets)
+[] Move author info to an independent widget (dep: widget support)
+[] Disqus support (dep: widget support) 
+[] Ad unit placement spots (widget support)
+[] Author information page
+[] Categories widget (dep: widget support)
+[] Archive / post list widget
+[] Generate humans.txt
+[] Multilang blog

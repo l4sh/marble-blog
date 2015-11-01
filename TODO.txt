@@ -1,13 +1,18 @@
 [X] Static post files with opengraph metadata
+[X] Improve navigation
 [] Sitemap
 [] RSS feed
 [] Atom feed
+[] Define widget areas
+[] Move as much as possible out to widgets
 [] Widget support (set spots to embed widgets)
 [] Move author info to an independent widget (dep: widget support)
-[] Disqus support (dep: widget support) 
+[] Disqus support (dep: widget support)
 [] Ad unit placement spots (widget support)
 [] Author information page
 [] Categories widget (dep: widget support)
 [] Archive / post list widget
 [] Generate humans.txt
+[] Factory reset
 [] Multilang blog
+[] Turn into a standalone app without Gulp ??

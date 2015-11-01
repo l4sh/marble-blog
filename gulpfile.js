@@ -16,12 +16,6 @@ var marbleHeader = '  MARBLE' + marbleIcon;
 marbleHeader += '\n  ' + fillChar(16, '-')
 
 
-//** Prompt **//
-var prompt = require('prompt');
-prompt.message = marbleIcon.white.bold;
-prompt.delimiter = '';
-
-
 //** Load Config **//
 var posts = require('./posts.json');
 var config = require('./config.js');
@@ -327,7 +321,7 @@ gulp.task('main-css', function() {
 
 
 //** Copy fonts to fonts folder **//
-gulp.task('fonts', function() {
+gulp.task('install-fonts', function() {
   gulp.src('**/fonts/**/*.{ttf,woff,woff2,eof,svg}', {
       cwd: 'bower_components'
     })

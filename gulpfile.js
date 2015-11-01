@@ -22,13 +22,16 @@ var config = require('./config.js');
 
 
 //** Run external editor **//
-function editor(file) {
+function runEditor(file) {
+  clearScr();
   var childProcess = require('child_process');
-  var e = config.editor || process.env.EDITOR || 'vi';
+  var editor = config.editor || process.env.EDITOR || 'vi';
 
-  childProcess.spawn(e, [file], {
+  childProcess.spawn(editor, [file], {
     stdio: 'inherit'
   });
+
+}
 }
 
 

@@ -236,7 +236,7 @@ function renderPostStatic(postInfo) {
 
 
 //** Parse Templates **//
-gulp.task('rendertpl', function() {
+gulp.task('render-templates', function() {
   gulp.src(['*.html', '!post.html'], {cwd: '_templates/'})
     .pipe($.fn(function(file) {
       // Insert user information with markup-js
@@ -254,7 +254,7 @@ gulp.task('rendertpl', function() {
 
 
 //** Concat and minify Vendor JS files **//
-gulp.task('vendorjs', function() {
+gulp.task('vendor-js', function() {
   gulp.src([
       '**/modernizr.js',
       '**/dist/jquery.js',
@@ -272,7 +272,7 @@ gulp.task('vendorjs', function() {
 
 
 //** Concat and minify main and user JS **//
-gulp.task('mainjs', function() {
+gulp.task('main-js', function() {
   gulp.src([
       'main.js',
       '**/*.js',
@@ -291,7 +291,7 @@ gulp.task('mainjs', function() {
 
 
 //** Concat and minify vendor CSS **//
-gulp.task('vendorcss', function() {
+gulp.task('vendor-css', function() {
 
   gulp.src([
       '*/normalize.css',
@@ -310,7 +310,7 @@ gulp.task('vendorcss', function() {
 
 
 //** Concat and minify main CSS **//
-gulp.task('maincss', function() {
+gulp.task('main-css', function() {
 
   gulp.src([
       'main.css',
@@ -342,27 +342,37 @@ gulp.task('edit-draft', function() {
 
   var drafts = fs.readdirSync(config.blog.draftsFolder);
 
-  menu('SELECT DRAFT', drafts, function(n) {
-    var fileToEdit = path.join(config.blog.draftsFolder, drafts[n]);
-    editor(fileToEdit);
+  createMenu('Select draft to edit', drafts, function(fileName) {
+    var fileToEdit = path.join(config.blog.draftsFolder, fileName);
+    runEditor(fileToEdit);
+
   });
+  gulp.start('edit-draft');
 });
 
 
 //** Edit published **//
-gulp.task('edit-pub', function() {
+gulp.task('edit-published', function() {
+  var noPosts = 'No posts here';
 
   var published = fs.readdirSync(config.blog.publishedFolder);
-
-  menu('SELECT POST', published , function(n) {
-    var fileToEdit = path.join(config.blog.publishedFolder, published[n]);
-    editor(fileToEdit);
+  if (!published.length) {
+    published.push(noPosts);
+  }
+  createMenu('Select published post to edit', published, function(fileName) {
+    var fileToEdit = path.join(config.blog.publishedFolder, fileName);
+    runEditor(fileToEdit);
+    gulp.start('edit-published');
   });
+
+
 });
 
 
 //** Create post **//
-gulp.task('create', function() {
+gulp.task('add-draft', function() {
+
+  disableRaw();
 
   mkdir(config.blog.draftsFolder);
 
@@ -413,10 +423,10 @@ gulp.task('create', function() {
                              formatFname(answer.title) + '.md');
 
     fs.writeFileSync(fileName, postContent);
-    editor(fileName);
+    runEditor(fileName);
   });
 
-
+  gulp.start('default');
 });
 
 
@@ -427,9 +437,9 @@ gulp.task('publish', function() {
 
   var drafts = fs.readdirSync(config.blog.draftsFolder);
 
-  menu('SELECT DRAFT TO PUBLISH', drafts, function(n) {
+  createMenu('SELECT DRAFT TO PUBLISH', drafts, function(label, index) {
 
-    var fileToPublish = path.join(config.blog.draftsFolder, drafts[n]);
+    var fileToPublish = path.join(config.blog.draftsFolder, drafts[index]);
 
     gulp.src(fileToPublish)
       .pipe($.fn(function(file) {
@@ -454,47 +464,68 @@ gulp.task('publish', function() {
     renderPostStatic(postInfo);
     // Delete draft once published
     del(fileToPublish);
-  });
+
+    gulp.start('publish');
+  }, 'green');
+
+  console.log('start publish');
+  gulp.start('publish');
 });
 
 
 //** Remove draft **//
-gulp.task('remove-draft', function() {
+gulp.task('delete-draft', function() {
   var draftsList = fs.readdirSync(config.blog.draftsFolder);
 
-  menu('SELECT DRAFT TO DELETE', drafts, function(n) {
-    var fileToDelete = path.join(configure.blog.draftsFolder, drafts[n]);
+  createMenu('SELECT DRAFT TO DELETE', draftsList, function(fileName) {
+    var fileToDelete = path.join(config.blog.draftsFolder, fileName);
 
-    inputConfirm(function() {
+    menuConfirm(function() {
       del(fileToDelete);
-      console.log(('Deleted ' + drafts[n]).red.bold);
+      console.log(('Deleted ' + fileName).red.bold);
     });
-  });
+  }, 'red');
+  gulp.start('delete-draft');
 });
 
 
 //** Remove published post **//
-gulp.task('remove-pub', function() {
+gulp.task('delete-published', function() {
   var published = fs.readdirSync(config.blog.publishedFolder);
 
-  menu('SELECT POST TO DELETE', published, function(n) {
+  createMenu('Select post to delete (Published)', published, function(n) {
     var fileToDelete = path.join(config.blog.publishedFolder, published[n]);
 
-    inputConfirm(function() {
+    menuConfirm(function() {
       del(fileToDelete);
       console.log(('Deleted ' + publishedList[n]).red.bold);
     });
-  });
+  }, 'red');
+
+  gulp.start('delete-published');
 });
 
 
 //** Initial setup **//
-gulp.task('setup', ['rendertpl', 'vendorjs', 'vendorcss', 'mainjs',
-  'maincss', 'fonts'
-]);
+gulp.task('build', ['vendor-js', 'vendor-css', 'main-js', 'main-css',
+                    'install-fonts', 'render-templates',], function(){
+
+  disableRaw();
+});
 
 
-//** Build app **//
-gulp.task('build', ['rendertpl', 'mainjs', 'maincss']);
-
-gulp.task('default', ['build', 'create']);
+//** Default **//
+gulp.task('default', function() {
+  var tasks = [
+    {value: 'build', name: 'Build blog (Minify JS/CSS, render templates, etc.)'},
+    {value: 'add-draft', name: 'Add a new post (as draft)'},
+    {value: 'publish', name: 'Publish draft'},
+    {value: 'edit-draft', name: 'Edit draft'},
+    {value: 'edit-published', name: 'Edit published post'},
+    {value: 'delete-draft', name: 'Delete draft'},
+    {value: 'delete-published', name: 'Delete published post'},
+  ]
+  createMenu('Main menu', tasks, function(answer){
+    gulp.start(answer);
+  })
+});

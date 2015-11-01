@@ -225,7 +225,6 @@ function renderPostStatic(postInfo) {
       var template = file._contents.toString('utf8');
       var render = mark.up(template, info);
       file._contents = new Buffer(render, 'utf8');
-      console.log(file._contents);
     }))
     .pipe($.rename({dirname: path.parse(postInfo.file).name,
                     basename: 'index', extname: '.html'}))
@@ -339,33 +338,23 @@ gulp.task('fonts', function() {
 
 //** Edit draft **//
 gulp.task('edit-draft', function() {
-
   var drafts = fs.readdirSync(config.blog.draftsFolder);
 
   createMenu('Select draft to edit', drafts, function(fileName) {
     var fileToEdit = path.join(config.blog.draftsFolder, fileName);
     runEditor(fileToEdit);
-
   });
-  gulp.start('edit-draft');
 });
 
 
 //** Edit published **//
 gulp.task('edit-published', function() {
-  var noPosts = 'No posts here';
-
   var published = fs.readdirSync(config.blog.publishedFolder);
-  if (!published.length) {
-    published.push(noPosts);
-  }
+
   createMenu('Select published post to edit', published, function(fileName) {
     var fileToEdit = path.join(config.blog.publishedFolder, fileName);
     runEditor(fileToEdit);
-    gulp.start('edit-published');
   });
-
-
 });
 
 
@@ -454,9 +443,9 @@ gulp.task('publish', function() {
 
   var drafts = fs.readdirSync(config.blog.draftsFolder);
 
-  createMenu('SELECT DRAFT TO PUBLISH', drafts, function(label, index) {
+  createMenu('Select draft to publish', drafts, function(answer) {
 
-    var fileToPublish = path.join(config.blog.draftsFolder, drafts[index]);
+    var fileToPublish = path.join(config.blog.draftsFolder, answer);
 
     gulp.src(fileToPublish)
       .pipe($.fn(function(file) {
@@ -473,20 +462,19 @@ gulp.task('publish', function() {
 
       var postInfo = getPostInfo(fileToPublish);
 
-      console.log(postInfo);
+      //console.log(postInfo);
 
     // Add published post to posts.json
     addToPosts(fileToPublish, postInfo);
     // Create post.html
     renderPostStatic(postInfo);
     // Delete draft once published
-    del(fileToPublish);
+    del(fileToPublish).then(function(){
+      gulp.start('publish');
+    });
 
-    gulp.start('publish');
-  }, 'green');
 
-  console.log('start publish');
-  gulp.start('publish');
+  });
 });
 
 
@@ -497,12 +485,17 @@ gulp.task('delete-draft', function() {
   createMenu('SELECT DRAFT TO DELETE', draftsList, function(fileName) {
     var fileToDelete = path.join(config.blog.draftsFolder, fileName);
 
-    menuConfirm(function() {
-      del(fileToDelete);
-      console.log(('Deleted ' + fileName).red.bold);
+    menuConfirm(function(confirmed) {
+      if (confirmed){
+        del(fileToDelete).then(function(){
+          gulp.start('delete-draft');
+        });
+      } else {
+        gulp.start('delete-draft');
+      }
     });
-  }, 'red');
-  gulp.start('delete-draft');
+  });
+
 });
 
 
@@ -510,25 +503,25 @@ gulp.task('delete-draft', function() {
 gulp.task('delete-published', function() {
   var published = fs.readdirSync(config.blog.publishedFolder);
 
-  createMenu('Select post to delete (Published)', published, function(n) {
-    var fileToDelete = path.join(config.blog.publishedFolder, published[n]);
+  createMenu('Select post to delete (Published)', published, function(fileName) {
+    var fileToDelete = path.join(config.blog.publishedFolder, fileName);
 
-    menuConfirm(function() {
-      del(fileToDelete);
-      console.log(('Deleted ' + publishedList[n]).red.bold);
+    menuConfirm(function(confirmed) {
+      if (confirmed){
+        del(fileToDelete).then(function(){
+          gulp.start('delete-published');
+        });
+      } else {
+        gulp.start('delete-published');
+      }
     });
-  }, 'red');
-
-  gulp.start('delete-published');
+  });
 });
 
 
 //** Initial setup **//
 gulp.task('build', ['vendor-js', 'vendor-css', 'main-js', 'main-css',
-                    'install-fonts', 'render-templates',], function(){
-
-  disableRaw();
-});
+                    'install-fonts', 'render-templates',]);
 
 
 //** Default **//

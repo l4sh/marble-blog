@@ -86,30 +86,19 @@ function createMenu(menuTitle, menuItems, callback) {
 
 
 //** Confirm prompt **//
-function inputConfirm(callback) {
+function menuConfirm(callback, question) {
+  question = question || 'Are you sure';
 
-  prompt.get({
-    name: 'confirm',
-    message: 'Confirm Y/n:'.green,
-    validator: /^[yYnN]$/,
-    warning: 'Must be Y or N'
-  }, function(err, answer) {
-
-    if (err) {
-      console.log(err);
-      return;
-    }
-
-    var result = /^[y|Y]/.test(answer.confirm);
-
+  inquirer.prompt({
+    type: 'confirm',
+    name: 'confirmed',
+    message: question
+  }, function(answer){
     if (callback && typeof(callback) === 'function') {
-      if (result) {
-        callback();
-      }
+        callback(answer.confirmed);
     }
   });
 }
-
 
 //** Format filename **//
 function formatFname(string) {

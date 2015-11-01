@@ -9,6 +9,7 @@ var colors = require('colors');
 var mark = require('markup-js');
 var stream = require('stream');
 var path = require('path');
+var inquirer = require('inquirer');
 
 var marbleIcon = '⭕⭕⭕';
 var marbleHeader = '  MARBLE' + marbleIcon;
@@ -50,54 +51,37 @@ function clearScr() {
 
 
 //** Menu **//
-function menu(menuTitle, menuItems, callback) {
+function createMenu(menuTitle, menuItems, callback) {
+  clearScr()
 
-  // Display title
-  console.log('\n' + menuTitle.red.bold);
-  console.log(new Array(menuTitle.length + 1).join('=').magenta.bold);
+  console.log(marbleHeader.bold.gray)
 
-  // Show list of items
-  for (var item in menuItems) {
-    var itemNumber = '  ' + (Number(item) + 1) + ') ';
-    var itemText = menuItems[item].split('.')[0];
-
-    console.log((itemNumber + itemText).green.bold);
+  menuItems.push(new inquirer.Separator())
+  if (menuTitle !== 'Main menu') {
+    menuItems.push({value: 'main-menu', name: 'Main menu'});
   }
-  console.log('  0) EXIT\n'.red.bold);
 
-  prompt.start();
+  menuItems.push({value: 'exit', name: 'Exit'});
 
-  // Get user input and validate
-  var getInput = function() {
-    prompt.get({
-      name: 'item',
-      message: 'Item number:'.green,
-      validator: /^[0-9]+$/,
-      required: true,
-      warning: 'Must be a number',
-      default: 1
-    }, function(err, answer) {
-
-      if (err) {
-        console.log(err);
-        return;
-
-      } else if (answer.item == 0) {
-        process.exit();
-
-      } else if (answer.item > menuItems.length) {
-        // Re-run on invalid input
-        console.log('error'.red + ':   Invalid option');
-        getInput();
-
-      } else if (callback && typeof(callback) === 'function') {
-        answer.item -= 1;
-        callback(answer.item);
+  inquirer.prompt(
+    {
+      type: 'list',
+      name: 'choice',
+      message: menuTitle,
+      choices: menuItems
+    }, function(answer) {
+      if (answer.choice === 'exit') {
+        clearScr();
+        console.log(marbleHeader.bold.gray + '\n\n  See you later...'.magenta);
+        process.exit()
+      } else if (answer.choice === 'main-menu') {
+        gulp.start('default');
+      } else {
+        if (callback && typeof(callback) === 'function') {
+          callback(answer.choice);
+        }
       }
     });
-  };
-
-  getInput();
 }
 
 

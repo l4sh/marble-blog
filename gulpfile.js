@@ -372,61 +372,78 @@ gulp.task('edit-published', function() {
 //** Create post **//
 gulp.task('add-draft', function() {
 
-  disableRaw();
-
   mkdir(config.blog.draftsFolder);
 
-  var properties = [{
-    name: 'title',
-    validator: /^[\w\s\-,:\'\"\u00C0-\u017F]+$/,
-    message: 'Post title:'.green,
-    warning: 'Invalid characters',
-    required: true
-  }, {
-    name: 'category',
-    message: 'Category:'.green,
-    validator: /^[A-Za-z0-9*]+$/,
-    warning: 'Only one word describing the category',
-    required: false,
-    default: '*'
-  }, {
-    name: 'tags',
-    message: 'Tags:'.green,
-    validator: /^[a-z,-0-9]+$/,
-    warning: 'Tags must be in lower case and separated only by commas'
-  }, {
-    name: 'description',
-    message: 'Description:'.green
-  }];
-
-  var postFormat = '---\ntitle: %TITLE%\ndescription: %DESCRIPTION%'
-  postFormat += 'author: %AUTHOR%\ncategory: %CATEGORY%\ntags: %TAGS%\n---';
-
-
-  prompt.get(properties, function(err, answer) {
-
-    if (err) {
-      console.log(err);
-      return;
+  var questions = [
+    {
+      type: 'input',
+      name: 'post_title',
+      message: 'Post title',
+      validate: function( value ) {
+        if (value.match(/^[\w\s\-,:\'\"\u00C0-\u017F]+$/)) {
+          return true;
+        } else {
+          return 'Invalid characters';
+        }
+      }
+    },
+    {
+      type: 'input',
+      name: 'category',
+      message: 'Category',
+      validate: function( value ) {
+        if (value.match(/^[A-Za-z0-9*]+$|^$/)) {
+          return true;
+        } else {
+          return 'Please use only one word describing the category';
+        }
+      },
+      default: function () { return "*"; }
+    },
+    {
+      type: 'input',
+      name: 'tags',
+      message: 'Tags',
+      validate: function( value ) {
+        if (value.match(/^[a-z,-0-9]+$|^$/)) {
+          return true;
+        } else {
+          return 'Tags must be in lower case and separated only by commas';
+        }
+      },
+      default: function () { return ''; }
+    },
+    {
+      type: 'input',
+      name: 'description',
+      message: 'Description'
     }
+  ];
 
-    var postContent = '---\n';
-    postContent += 'title: ' + answer.title + '\n';
-    postContent += 'id: {{id}}\n';
-    postContent += 'description: ' + (answer.description || '') + '\n';
-    postContent += 'author: ' + config.author.name + '\n';
-    postContent += 'category: ' + answer.category + '\n';
-    postContent += 'tags: ' + (answer.tags || '') + '\n';
-    postContent += '---\n';
+  inquirer.prompt( questions, function(answers) {
+    var postContent = [
+      '---',
+      'title: ' + answers.post_title,
+      'id: {{id}}',
+      'description: ' + (answers.description || ''),
+      'author: ' + config.author.name,
+      'category: ' + answers.category,
+      'tags: ' + (answers.tags || ''),
+      '---'
+    ];
+
+    postContent = postContent.join('\n') + '\n';
 
     var fileName = path.join(config.blog.draftsFolder,
-                             formatFname(answer.title) + '.md');
+                             formatFname(answers.post_title) + '.md');
 
     fs.writeFileSync(fileName, postContent);
     runEditor(fileName);
+
+    console.log('Remember to publish when you\'re ready'.green)
+
   });
 
-  gulp.start('default');
 });
 
 

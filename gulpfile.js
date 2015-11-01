@@ -9,11 +9,11 @@ var colors = require('colors');
 var mark = require('markup-js');
 var stream = require('stream');
 var path = require('path');
+var inquirer = require('inquirer');
 
-//** Prompt **//
-var prompt = require('prompt');
-prompt.message = '✪ '.red.bold;
-prompt.delimiter = '';
+var marbleIcon = '⭕⭕⭕';
+var marbleHeader = '  MARBLE' + marbleIcon;
+marbleHeader += '\n  ' + fillChar(16, '-')
 
 
 //** Load Config **//
@@ -22,93 +22,77 @@ var config = require('./config.js');
 
 
 //** Run external editor **//
-function editor(file) {
+function runEditor(file) {
+  clearScr();
   var childProcess = require('child_process');
-  var e = config.editor || process.env.EDITOR || 'vi';
+  var editor = config.editor || process.env.EDITOR || 'vi';
 
-  childProcess.spawn(e, [file], {
+  childProcess.spawn(editor, [file], {
     stdio: 'inherit'
   });
+
+}
+
+//** Fill with desired characters or whitespace **//
+function fillChar(length, chars) {
+  chars = chars || ' ';
+  return (new Array(length).join(chars)).substring(0, length);
+}
+
+function clearScr() {
+  process.stdout.write("\u001b[2J\u001b[0;0H");
 }
 
 
 //** Menu **//
-function menu(menuTitle, menuItems, callback) {
+function createMenu(menuTitle, menuItems, callback) {
+  clearScr()
 
-  // Display title
-  console.log('\n' + menuTitle.red.bold);
-  console.log(new Array(menuTitle.length + 1).join('=').magenta.bold);
+  console.log(marbleHeader.bold.gray)
 
-  // Show list of items
-  for (var item in menuItems) {
-    var itemNumber = '  ' + (Number(item) + 1) + ') ';
-    var itemText = menuItems[item].split('.')[0];
-
-    console.log((itemNumber + itemText).green.bold);
+  menuItems.push(new inquirer.Separator())
+  if (menuTitle !== 'Main menu') {
+    menuItems.push({value: 'main-menu', name: 'Main menu'});
   }
-  console.log('  0) EXIT\n'.red.bold);
 
-  prompt.start();
+  menuItems.push({value: 'exit', name: 'Exit'});
 
-  // Get user input and validate
-  var getInput = function() {
-    prompt.get({
-      name: 'item',
-      message: 'Item number:'.green,
-      validator: /^[0-9]+$/,
-      required: true,
-      warning: 'Must be a number',
-      default: 1
-    }, function(err, answer) {
-
-      if (err) {
-        console.log(err);
-        return;
-
-      } else if (answer.item == 0) {
-        process.exit();
-
-      } else if (answer.item > menuItems.length) {
-        // Re-run on invalid input
-        console.log('error'.red + ':   Invalid option');
-        getInput();
-
-      } else if (callback && typeof(callback) === 'function') {
-        answer.item -= 1;
-        callback(answer.item);
+  inquirer.prompt(
+    {
+      type: 'list',
+      name: 'choice',
+      message: menuTitle,
+      choices: menuItems
+    }, function(answer) {
+      if (answer.choice === 'exit') {
+        clearScr();
+        console.log(marbleHeader.bold.gray + '\n\n  See you later...'.magenta);
+        process.exit()
+      } else if (answer.choice === 'main-menu') {
+        gulp.start('default');
+      } else {
+        if (callback && typeof(callback) === 'function') {
+          callback(answer.choice);
+        }
       }
     });
-  };
-
-  getInput();
 }
 
 
 //** Confirm prompt **//
-function inputConfirm(callback) {
+function menuConfirm(callback, question) {
+  question = question || 'Are you sure';
 
-  prompt.get({
-    name: 'confirm',
-    message: 'Confirm Y/n:'.green,
-    validator: /^[yYnN]$/,
-    warning: 'Must be Y or N'
-  }, function(err, answer) {
-
-    if (err) {
-      console.log(err);
-      return;
-    }
-
-    var result = /^[y|Y]/.test(answer.confirm);
-
+  inquirer.prompt({
+    type: 'confirm',
+    name: 'confirmed',
+    message: question
+  }, function(answer){
     if (callback && typeof(callback) === 'function') {
-      if (result) {
-        callback();
-      }
+        callback(answer.confirmed);
     }
   });
 }
-
 
 //** Format filename **//
 function formatFname(string) {
@@ -235,7 +219,6 @@ function renderPostStatic(postInfo) {
       var template = file._contents.toString('utf8');
       var render = mark.up(template, info);
       file._contents = new Buffer(render, 'utf8');
-      console.log(file._contents);
     }))
     .pipe($.rename({dirname: path.parse(postInfo.file).name,
                     basename: 'index', extname: '.html'}))
@@ -246,7 +229,7 @@ function renderPostStatic(postInfo) {
 
 
 //** Parse Templates **//
-gulp.task('rendertpl', function() {
+gulp.task('render-templates', function() {
   gulp.src(['*.html', '!post.html'], {cwd: '_templates/'})
     .pipe($.fn(function(file) {
       // Insert user information with markup-js
@@ -264,7 +247,7 @@ gulp.task('rendertpl', function() {
 
 
 //** Concat and minify Vendor JS files **//
-gulp.task('vendorjs', function() {
+gulp.task('vendor-js', function() {
   gulp.src([
       '**/modernizr.js',
       '**/dist/jquery.js',
@@ -282,7 +265,7 @@ gulp.task('vendorjs', function() {
 
 
 //** Concat and minify main and user JS **//
-gulp.task('mainjs', function() {
+gulp.task('main-js', function() {
   gulp.src([
       'main.js',
       '**/*.js',
@@ -301,7 +284,7 @@ gulp.task('mainjs', function() {
 
 
 //** Concat and minify vendor CSS **//
-gulp.task('vendorcss', function() {
+gulp.task('vendor-css', function() {
 
   gulp.src([
       '*/normalize.css',
@@ -320,7 +303,7 @@ gulp.task('vendorcss', function() {
 
 
 //** Concat and minify main CSS **//
-gulp.task('maincss', function() {
+gulp.task('main-css', function() {
 
   gulp.src([
       'main.css',
@@ -338,7 +321,7 @@ gulp.task('maincss', function() {
 
 
 //** Copy fonts to fonts folder **//
-gulp.task('fonts', function() {
+gulp.task('install-fonts', function() {
   gulp.src('**/fonts/**/*.{ttf,woff,woff2,eof,svg}', {
       cwd: 'bower_components'
     })
@@ -349,83 +332,100 @@ gulp.task('fonts', function() {
 
 //** Edit draft **//
 gulp.task('edit-draft', function() {
-
   var drafts = fs.readdirSync(config.blog.draftsFolder);
 
-  menu('SELECT DRAFT', drafts, function(n) {
-    var fileToEdit = path.join(config.blog.draftsFolder, drafts[n]);
-    editor(fileToEdit);
+  createMenu('Select draft to edit', drafts, function(fileName) {
+    var fileToEdit = path.join(config.blog.draftsFolder, fileName);
+    runEditor(fileToEdit);
   });
 });
 
 
 //** Edit published **//
-gulp.task('edit-pub', function() {
-
+gulp.task('edit-published', function() {
   var published = fs.readdirSync(config.blog.publishedFolder);
 
-  menu('SELECT POST', published , function(n) {
-    var fileToEdit = path.join(config.blog.publishedFolder, published[n]);
-    editor(fileToEdit);
+  createMenu('Select published post to edit', published, function(fileName) {
+    var fileToEdit = path.join(config.blog.publishedFolder, fileName);
+    runEditor(fileToEdit);
   });
 });
 
 
 //** Create post **//
-gulp.task('create', function() {
+gulp.task('add-draft', function() {
 
   mkdir(config.blog.draftsFolder);
 
-  var properties = [{
-    name: 'title',
-    validator: /^[\w\s\-,:\'\"\u00C0-\u017F]+$/,
-    message: 'Post title:'.green,
-    warning: 'Invalid characters',
-    required: true
-  }, {
-    name: 'category',
-    message: 'Category:'.green,
-    validator: /^[A-Za-z0-9*]+$/,
-    warning: 'Only one word describing the category',
-    required: false,
-    default: '*'
-  }, {
-    name: 'tags',
-    message: 'Tags:'.green,
-    validator: /^[a-z,-0-9]+$/,
-    warning: 'Tags must be in lower case and separated only by commas'
-  }, {
-    name: 'description',
-    message: 'Description:'.green
-  }];
-
-  var postFormat = '---\ntitle: %TITLE%\ndescription: %DESCRIPTION%'
-  postFormat += 'author: %AUTHOR%\ncategory: %CATEGORY%\ntags: %TAGS%\n---';
-
-
-  prompt.get(properties, function(err, answer) {
-
-    if (err) {
-      console.log(err);
-      return;
+  var questions = [
+    {
+      type: 'input',
+      name: 'post_title',
+      message: 'Post title',
+      validate: function( value ) {
+        if (value.match(/^[\w\s\-,:\'\"\u00C0-\u017F]+$/)) {
+          return true;
+        } else {
+          return 'Invalid characters';
+        }
+      }
+    },
+    {
+      type: 'input',
+      name: 'category',
+      message: 'Category',
+      validate: function( value ) {
+        if (value.match(/^[A-Za-z0-9*]+$|^$/)) {
+          return true;
+        } else {
+          return 'Please use only one word describing the category';
+        }
+      },
+      default: function () { return "*"; }
+    },
+    {
+      type: 'input',
+      name: 'tags',
+      message: 'Tags',
+      validate: function( value ) {
+        if (value.match(/^[a-z,-0-9]+$|^$/)) {
+          return true;
+        } else {
+          return 'Tags must be in lower case and separated only by commas';
+        }
+      },
+      default: function () { return ''; }
+    },
+    {
+      type: 'input',
+      name: 'description',
+      message: 'Description'
     }
+  ];
 
-    var postContent = '---\n';
-    postContent += 'title: ' + answer.title + '\n';
-    postContent += 'id: {{id}}\n';
-    postContent += 'description: ' + (answer.description || '') + '\n';
-    postContent += 'author: ' + config.author.name + '\n';
-    postContent += 'category: ' + answer.category + '\n';
-    postContent += 'tags: ' + (answer.tags || '') + '\n';
-    postContent += '---\n';
+  inquirer.prompt( questions, function(answers) {
+    var postContent = [
+      '---',
+      'title: ' + answers.post_title,
+      'id: {{id}}',
+      'description: ' + (answers.description || ''),
+      'author: ' + config.author.name,
+      'category: ' + answers.category,
+      'tags: ' + (answers.tags || ''),
+      '---'
+    ];
+
+    postContent = postContent.join('\n') + '\n';
 
     var fileName = path.join(config.blog.draftsFolder,
-                             formatFname(answer.title) + '.md');
+                             formatFname(answers.post_title) + '.md');
 
     fs.writeFileSync(fileName, postContent);
-    editor(fileName);
-  });
+    runEditor(fileName);
 
+    console.log('Remember to publish when you\'re ready'.green)
+
+  });
 
 });
 
@@ -437,9 +437,9 @@ gulp.task('publish', function() {
 
   var drafts = fs.readdirSync(config.blog.draftsFolder);
 
-  menu('SELECT DRAFT TO PUBLISH', drafts, function(n) {
+  createMenu('Select draft to publish', drafts, function(answer) {
 
-    var fileToPublish = path.join(config.blog.draftsFolder, drafts[n]);
+    var fileToPublish = path.join(config.blog.draftsFolder, answer);
 
     gulp.src(fileToPublish)
       .pipe($.fn(function(file) {
@@ -456,55 +456,80 @@ gulp.task('publish', function() {
 
       var postInfo = getPostInfo(fileToPublish);
 
-      console.log(postInfo);
+      //console.log(postInfo);
 
     // Add published post to posts.json
     addToPosts(fileToPublish, postInfo);
     // Create post.html
     renderPostStatic(postInfo);
     // Delete draft once published
-    del(fileToPublish);
+    del(fileToPublish).then(function(){
+      gulp.start('publish');
+    });
+
+
   });
 });
 
 
 //** Remove draft **//
-gulp.task('remove-draft', function() {
+gulp.task('delete-draft', function() {
   var draftsList = fs.readdirSync(config.blog.draftsFolder);
 
-  menu('SELECT DRAFT TO DELETE', drafts, function(n) {
-    var fileToDelete = path.join(configure.blog.draftsFolder, drafts[n]);
+  createMenu('SELECT DRAFT TO DELETE', draftsList, function(fileName) {
+    var fileToDelete = path.join(config.blog.draftsFolder, fileName);
 
-    inputConfirm(function() {
-      del(fileToDelete);
-      console.log(('Deleted ' + drafts[n]).red.bold);
+    menuConfirm(function(confirmed) {
+      if (confirmed){
+        del(fileToDelete).then(function(){
+          gulp.start('delete-draft');
+        });
+      } else {
+        gulp.start('delete-draft');
+      }
     });
   });
+
 });
 
 
 //** Remove published post **//
-gulp.task('remove-pub', function() {
+gulp.task('delete-published', function() {
   var published = fs.readdirSync(config.blog.publishedFolder);
 
-  menu('SELECT POST TO DELETE', published, function(n) {
-    var fileToDelete = path.join(config.blog.publishedFolder, published[n]);
+  createMenu('Select post to delete (Published)', published, function(fileName) {
+    var fileToDelete = path.join(config.blog.publishedFolder, fileName);
 
-    inputConfirm(function() {
-      del(fileToDelete);
-      console.log(('Deleted ' + publishedList[n]).red.bold);
+    menuConfirm(function(confirmed) {
+      if (confirmed){
+        del(fileToDelete).then(function(){
+          gulp.start('delete-published');
+        });
+      } else {
+        gulp.start('delete-published');
+      }
     });
   });
 });
 
 
 //** Initial setup **//
-gulp.task('setup', ['rendertpl', 'vendorjs', 'vendorcss', 'mainjs',
-  'maincss', 'fonts'
-]);
+gulp.task('build', ['vendor-js', 'vendor-css', 'main-js', 'main-css',
+                    'install-fonts', 'render-templates',]);
 
 
-//** Build app **//
-gulp.task('build', ['rendertpl', 'mainjs', 'maincss']);
-
-gulp.task('default', ['build', 'create']);
+//** Default **//
+gulp.task('default', function() {
+  var tasks = [
+    {value: 'build', name: 'Build blog (Minify JS/CSS, render templates, etc.)'},
+    {value: 'add-draft', name: 'Add a new post (as draft)'},
+    {value: 'publish', name: 'Publish draft'},
+    {value: 'edit-draft', name: 'Edit draft'},
+    {value: 'edit-published', name: 'Edit published post'},
+    {value: 'delete-draft', name: 'Delete draft'},
+    {value: 'delete-published', name: 'Delete published post'},
+  ]
+  createMenu('Main menu', tasks, function(answer){
+    gulp.start(answer);
+  })
+});

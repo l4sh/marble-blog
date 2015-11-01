@@ -10,9 +10,14 @@ var mark = require('markup-js');
 var stream = require('stream');
 var path = require('path');
 
+var marbleIcon = '⭕⭕⭕';
+var marbleHeader = '  MARBLE' + marbleIcon;
+marbleHeader += '\n  ' + fillChar(16, '-')
+
+
 //** Prompt **//
 var prompt = require('prompt');
-prompt.message = '✪ '.red.bold;
+prompt.message = marbleIcon.white.bold;
 prompt.delimiter = '';
 
 

@@ -37,6 +37,15 @@ function runEditor(file) {
   });
 
 }
+
+//** Fill with desired characters or whitespace **//
+function fillChar(length, chars) {
+  chars = chars || ' ';
+  return (new Array(length).join(chars)).substring(0, length);
+}
+
+function clearScr() {
+  process.stdout.write("\u001b[2J\u001b[0;0H");
 }
 
 

@@ -10,6 +10,8 @@ var mark = require('markup-js');
 var stream = require('stream');
 var path = require('path');
 var inquirer = require('inquirer');
+var Feed = require('feed');
+var marked = require('marked');
 
 var marbleIcon = '⭕⭕⭕';
 var marbleHeader = '  MARBLE' + marbleIcon;
@@ -158,7 +160,7 @@ function getPostInfo(fileName) {
       // Generate post excerpt if no description or too short
       if (key === 'description' && val.length < 10) {
         val = body.split(' ').slice(0, config.blog.excerptLength);
-        val = val.join(' ').replace(/\n/g, ' ').trim();
+        val = val.join(' ').trim()//.replace(/\n/g, ' ').trim();
       }
 
       postInfo[key] = val;
@@ -170,7 +172,7 @@ function getPostInfo(fileName) {
 
   // Add post URL
   postInfo.url = path.join(config.blog.url, config.blog.postsFolder,
-                           path.parse(postInfo.file).name)
+                           path.parse(postInfo.file).name).replace(':/', '://')
 
   // Get post ID
   postInfo.id = genPostId();
@@ -213,6 +215,7 @@ function addToPosts(fileName, postInfo) {
 
 function renderPostStatic(postInfo) {
   var info = {post: postInfo, blog: config.blog, author: config.author};
+  info.post.description = marked(info.post.description);
 
   gulp.src(path.join(config.blog.templatesFolder, 'post.html'))
     .pipe($.fn(function(file){
@@ -471,6 +474,40 @@ gulp.task('publish', function() {
   });
 });
 
+
+//** Generate RSS & Atom feeds **//
+gulp.task('feed', function() {
+  var feed = new Feed({
+    title: config.blog.title,
+    description: config.blog.description,
+    link: config.blog.url,
+    //image: 'http://example.com/image.png',
+    copyright: config.blog.license,
+    author: {
+        name: config.author.name,
+        email: config.author.email,
+        link: config.blog.url
+    }
+  });
+  var i= 0;
+  for (var n in posts) {
+
+    feed.addItem({
+      title: posts[n].title,
+      link: posts[n].url,
+      description: marked(posts[n].description) ,
+      author: {
+        name: config.author.name,
+        email: config.author.email,
+        link: config.blog.url
+      },
+      date: new Date(),
+      image: posts[n].image || ''
+    });
+  }
+  fs.writeFileSync(config.blog.rssFile, feed.render('rss-2.0'));
+  fs.writeFileSync(config.blog.atomFile, feed.render('atom-1.0'));
+});
 
 //** Remove draft **//
 gulp.task('delete-draft', function() {

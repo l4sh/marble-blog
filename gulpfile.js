@@ -158,7 +158,7 @@ function getPostInfo(fileName) {
       }
 
       // Generate post excerpt if no description or too short
-      if (key === 'description' && val.length < 10) {
+      if (key === 'description' && val.length < config.blog.excerptThreshold) {
         val = body.split(' ').slice(0, config.blog.excerptLength);
         val = val.join(' ').trim()//.replace(/\n/g, ' ').trim();
       }
@@ -176,6 +176,7 @@ function getPostInfo(fileName) {
 
   // Get post ID
   postInfo.id = genPostId();
+  postInfo.date = new Date()
 
   return postInfo;
 }
@@ -413,6 +414,7 @@ gulp.task('add-draft', function() {
       'id: {{id}}',
       'description: ' + (answers.description || ''),
       'author: ' + config.author.name,
+      'date: {{date}}',
       'category: ' + answers.category,
       'tags: ' + (answers.tags || ''),
       '---'
@@ -444,22 +446,21 @@ gulp.task('publish', function() {
 
     var fileToPublish = path.join(config.blog.draftsFolder, answer);
 
+    var postInfo = getPostInfo(fileToPublish);
+
     gulp.src(fileToPublish)
       .pipe($.fn(function(file) {
         // Insert post id
         var content = file._contents.toString('utf-8');
-        var info = {
-          id: genPostId()
-        };
 
-        content = mark.up(content, info);
-        file._contents.write(content, 'utf-8');
+        //content = mark.up(content, postInfo);
+        var rndr = mark.up(content, postInfo);
+
+        file._contents = new Buffer(rndr, 'utf8');
+
+        //file._contents.write(content, 'utf-8');
       }))
       .pipe(gulp.dest(config.blog.publishedFolder));
-
-      var postInfo = getPostInfo(fileToPublish);
-
-      //console.log(postInfo);
 
     // Add published post to posts.json
     addToPosts(fileToPublish, postInfo);
@@ -477,11 +478,12 @@ gulp.task('publish', function() {
 
 //** Generate RSS & Atom feeds **//
 gulp.task('feed', function() {
+
   var feed = new Feed({
     title: config.blog.title,
     description: config.blog.description,
     link: config.blog.url,
-    //image: 'http://example.com/image.png',
+    image: config.blog.image,
     copyright: config.blog.license,
     author: {
         name: config.author.name,
@@ -495,13 +497,14 @@ gulp.task('feed', function() {
     feed.addItem({
       title: posts[n].title,
       link: posts[n].url,
-      description: marked(posts[n].description) ,
+      description: marked(posts[n].description + '\n...'),
+      content: marked(posts[n].description + '\n...'),
       author: {
         name: config.author.name,
         email: config.author.email,
         link: config.blog.url
       },
-      date: new Date(),
+      date: new Date(posts[n].date),
       image: posts[n].image || ''
     });
   }

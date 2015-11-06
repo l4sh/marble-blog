@@ -2,11 +2,9 @@ var config = {
   author: {
     name: 'MARBLE Author',
     description: 'I post things, a lot of things',
-    email: '', // optional
-    twitterHandle: '@my_twitter_handle',
+    email: 'email@example.com', // optional
     twitter: 'https://twitter.com/twitter',
-    soundcloud: 'https://soundcloud.com/l4sh',
-    facebook: 'https://facebook.com/l4sh'
+    facebook: 'https://facebook.com/facebook'
 
   },
 
@@ -21,7 +19,8 @@ var config = {
     pagerPosition: 'bottom',
     postsJSON: 'posts.json',
     excerptLength: 50,
-    postsFolder: 'posts',
+    excerptThreshold: 10, // If the post description has less characters than this an excerpt will be generated
+    postsFolder: 'posts', // Static html posts folder
     draftsFolder: '_drafts',
     publishedFolder: '_posts',
     templatesFolder: '_templates',

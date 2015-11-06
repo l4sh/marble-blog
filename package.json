@@ -12,6 +12,7 @@
     "browser-sync": "^2.7.12",
     "colors": "^1.1.2",
     "del": "^2.0.2",
+    "feed": "^0.2.6",
     "gulp": "^3.9.0",
     "gulp-concat": "^2.6.0",
     "gulp-flatten": "0.0.4",
@@ -28,6 +29,7 @@
     "gulp-util": "^3.0.6",
     "inquirer": "^0.11.0",
     "jshint-stylish": "^2.0.1",
+    "marked": "^0.3.5",
     "markup-js": "^1.5.21",
     "mkdir-p": "0.0.6"
   }

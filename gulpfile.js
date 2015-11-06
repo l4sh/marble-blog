@@ -10,6 +10,8 @@ var mark = require('markup-js');
 var stream = require('stream');
 var path = require('path');
 var inquirer = require('inquirer');
+var Feed = require('feed');
+var marked = require('marked');
 
 var marbleIcon = '⭕⭕⭕';
 var marbleHeader = '  MARBLE' + marbleIcon;
@@ -156,9 +158,9 @@ function getPostInfo(fileName) {
       }
 
       // Generate post excerpt if no description or too short
-      if (key === 'description' && val.length < 10) {
+      if (key === 'description' && val.length < config.blog.excerptThreshold) {
         val = body.split(' ').slice(0, config.blog.excerptLength);
-        val = val.join(' ').replace(/\n/g, ' ').trim();
+        val = val.join(' ').trim()//.replace(/\n/g, ' ').trim();
       }
 
       postInfo[key] = val;
@@ -170,10 +172,11 @@ function getPostInfo(fileName) {
 
   // Add post URL
   postInfo.url = path.join(config.blog.url, config.blog.postsFolder,
-                           path.parse(postInfo.file).name)
+                           path.parse(postInfo.file).name).replace(':/', '://')
 
   // Get post ID
   postInfo.id = genPostId();
+  postInfo.date = new Date()
 
   return postInfo;
 }
@@ -213,6 +216,7 @@ function addToPosts(fileName, postInfo) {
 
 function renderPostStatic(postInfo) {
   var info = {post: postInfo, blog: config.blog, author: config.author};
+  info.post.description = marked(info.post.description);
 
   gulp.src(path.join(config.blog.templatesFolder, 'post.html'))
     .pipe($.fn(function(file){
@@ -410,6 +414,7 @@ gulp.task('add-draft', function() {
       'id: {{id}}',
       'description: ' + (answers.description || ''),
       'author: ' + config.author.name,
+      'date: {{date}}',
       'category: ' + answers.category,
       'tags: ' + (answers.tags || ''),
       '---'
@@ -441,22 +446,21 @@ gulp.task('publish', function() {
 
     var fileToPublish = path.join(config.blog.draftsFolder, answer);
 
+    var postInfo = getPostInfo(fileToPublish);
+
     gulp.src(fileToPublish)
       .pipe($.fn(function(file) {
         // Insert post id
         var content = file._contents.toString('utf-8');
-        var info = {
-          id: genPostId()
-        };
 
-        content = mark.up(content, info);
-        file._contents.write(content, 'utf-8');
+        //content = mark.up(content, postInfo);
+        var rndr = mark.up(content, postInfo);
+
+        file._contents = new Buffer(rndr, 'utf8');
+
+        //file._contents.write(content, 'utf-8');
       }))
       .pipe(gulp.dest(config.blog.publishedFolder));
-
-      var postInfo = getPostInfo(fileToPublish);
-
-      //console.log(postInfo);
 
     // Add published post to posts.json
     addToPosts(fileToPublish, postInfo);
@@ -464,6 +468,7 @@ gulp.task('publish', function() {
     renderPostStatic(postInfo);
     // Delete draft once published
     del(fileToPublish).then(function(){
+      gulp.start('feeds');
       gulp.start('publish');
     });
 
@@ -471,6 +476,42 @@ gulp.task('publish', function() {
   });
 });
 
+
+//** Generate RSS & Atom feeds **//
+gulp.task('feeds', function() {
+
+  var feed = new Feed({
+    title: config.blog.title,
+    description: config.blog.description,
+    link: config.blog.url,
+    image: config.blog.image,
+    copyright: config.blog.license,
+    author: {
+        name: config.author.name,
+        email: config.author.email,
+        link: config.blog.url
+    }
+  });
+  var i= 0;
+  for (var n in posts) {
+
+    feed.addItem({
+      title: posts[n].title,
+      link: posts[n].url,
+      description: marked(posts[n].description + '\n...'),
+      content: marked(posts[n].description + '\n...'),
+      author: {
+        name: config.author.name,
+        email: config.author.email,
+        link: config.blog.url
+      },
+      date: new Date(posts[n].date),
+      image: posts[n].image || ''
+    });
+  }
+  fs.writeFileSync(config.blog.rssFile, feed.render('rss-2.0'));
+  fs.writeFileSync(config.blog.atomFile, feed.render('atom-1.0'));
+});
 
 //** Remove draft **//
 gulp.task('delete-draft', function() {
@@ -528,6 +569,7 @@ gulp.task('default', function() {
     {value: 'edit-published', name: 'Edit published post'},
     {value: 'delete-draft', name: 'Delete draft'},
     {value: 'delete-published', name: 'Delete published post'},
+    {value: 'feeds', name: 'Rebuild RSS & Atom feeds'}
   ]
   createMenu('Main menu', tasks, function(answer){
     gulp.start(answer);

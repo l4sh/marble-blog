@@ -127,6 +127,11 @@ function splitPostData(data) {
           return v.trim();
         });
       }
+
+      if (key === 'date') {
+        val = _t.slice(1, _t.length).join(':').trim()
+      }
+
       header[key] = val;
     }
   });

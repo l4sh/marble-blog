@@ -468,6 +468,7 @@ gulp.task('publish', function() {
     renderPostStatic(postInfo);
     // Delete draft once published
     del(fileToPublish).then(function(){
+      gulp.start('feeds');
       gulp.start('publish');
     });
 
@@ -477,7 +478,7 @@ gulp.task('publish', function() {
 
 
 //** Generate RSS & Atom feeds **//
-gulp.task('feed', function() {
+gulp.task('feeds', function() {
 
   var feed = new Feed({
     title: config.blog.title,
@@ -568,6 +569,7 @@ gulp.task('default', function() {
     {value: 'edit-published', name: 'Edit published post'},
     {value: 'delete-draft', name: 'Delete draft'},
     {value: 'delete-published', name: 'Delete published post'},
+    {value: 'feeds', name: 'Rebuild RSS & Atom feeds'}
   ]
   createMenu('Main menu', tasks, function(answer){
     gulp.start(answer);

@@ -470,6 +470,7 @@ gulp.task('publish', function() {
     del(fileToPublish).then(function(){
       gulp.start('feeds');
       gulp.start('publish');
+      gulp.start('sitemap');
     });
 
 
@@ -512,6 +513,17 @@ gulp.task('feeds', function() {
   fs.writeFileSync(config.blog.rssFile, feed.render('rss-2.0'));
   fs.writeFileSync(config.blog.atomFile, feed.render('atom-1.0'));
 });
+
+
+//** Generate sitemap**//
+gulp.task('sitemap', function () {
+    gulp.src(['*.html', 'posts/**/*.html'])
+        .pipe($.sitemap({
+            siteUrl: config.blog.url
+        }))
+        .pipe(gulp.dest('./'));
+});
+
 
 //** Remove draft **//
 gulp.task('delete-draft', function() {
@@ -556,7 +568,7 @@ gulp.task('delete-published', function() {
 
 //** Initial setup **//
 gulp.task('build', ['vendor-js', 'vendor-css', 'main-js', 'main-css',
-                    'install-fonts', 'render-templates',]);
+                    'install-fonts', 'render-templates', 'sitemap']);
 
 
 //** Default **//
@@ -570,6 +582,7 @@ gulp.task('default', function() {
     {value: 'delete-draft', name: 'Delete draft'},
     {value: 'delete-published', name: 'Delete published post'},
     {value: 'feeds', name: 'Rebuild RSS & Atom feeds'}
+    {value: 'sitemap', name: 'Generate sitemap'}
   ]
   createMenu('Main menu', tasks, function(answer){
     gulp.start(answer);

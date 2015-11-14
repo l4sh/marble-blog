@@ -234,7 +234,7 @@ function renderPostStatic(postInfo) {
 
 //** Parse Templates **//
 gulp.task('render-templates', function() {
-  gulp.src(['*.html', '!post.html'], {cwd: '_templates/'})
+  gulp.src(['*.html', '!post.html'], {cwd: config.blog.templatesFolder})
     .pipe($.fn(function(file) {
       // Insert user information with markup-js
       var tpl = file._contents.toString('utf8');
@@ -273,15 +273,44 @@ gulp.task('main-js', function() {
   gulp.src([
       'main.js',
       '**/*.js',
-      '!*.min.js',
-      '!loadpost.js' //to be loaded only in post pages
+      '!**/*.min.js',
+      '!single-post.js' //to be loaded only in post pages
     ], {
-      cwd: 'js/'
+      cwd: 'core/js/'
     })
     .pipe($.newer('js/main.min.js'))
     .pipe($.jshint())
     .pipe($.jshint.reporter('jshint-stylish'))
     .pipe($.concat('main.min.js'))
+    .pipe($.uglify())
+    .pipe(gulp.dest('js'));
+
+  // Single post content loader
+  gulp.src(['single-post.js'], {cwd: 'core/js/'})
+    .pipe($.uglify())
+    .pipe(gulp.dest('js'));
+});
+
+
+//** Concat and minify plugins JS **//
+gulp.task('plugins-js', function() {
+  var plugins = config.plugins;
+  var files = [];
+
+  for (var name in plugins) {
+    if (plugins[name].enabled) {
+      files.push(path.join(name, '**.js'));
+    }
+  }
+
+  console.log(files);
+  gulp.src(files, {
+      cwd: 'plugins/'
+    })
+    .pipe($.newer('js/plugins.min.js'))
+    .pipe($.jshint())
+    .pipe($.jshint.reporter('jshint-stylish'))
+    .pipe($.concat('plugins.min.js'))
     .pipe($.uglify())
     .pipe(gulp.dest('js'));
 });
@@ -297,6 +326,7 @@ gulp.task('vendor-css', function() {
     ], {
       cwd: 'bower_components/'
     })
+    .pipe($.newer('css/vendor.min.css'))
     .pipe($.concat('vendor.min.css'))
     .pipe($.minifyCss({
       keepSpecialComments: 0
@@ -310,12 +340,11 @@ gulp.task('vendor-css', function() {
 gulp.task('main-css', function() {
 
   gulp.src([
-      'main.css',
       '**/*.css',
-      '!*.min.css',
     ], {
-      cwd: 'css/'
+      cwd: 'core/css/'
     })
+    .pipe($.newer('css/main.min.css'))
     .pipe($.concat('main.min.css'))
     .pipe($.minifyCss({
       keepSpecialComments: 0
@@ -581,7 +610,7 @@ gulp.task('default', function() {
     {value: 'edit-published', name: 'Edit published post'},
     {value: 'delete-draft', name: 'Delete draft'},
     {value: 'delete-published', name: 'Delete published post'},
-    {value: 'feeds', name: 'Rebuild RSS & Atom feeds'}
+    {value: 'feeds', name: 'Rebuild RSS & Atom feeds'},
     {value: 'sitemap', name: 'Generate sitemap'}
   ]
   createMenu('Main menu', tasks, function(answer){

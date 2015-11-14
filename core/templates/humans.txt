@@ -1,0 +1,16 @@
+# humanstxt.org/
+# The humans responsible & technology colophon
+
+# TEAM
+
+    {{config.author.name}} -- Author -- {{config.author.twitterHandle}}
+
+# THANKS
+
+    <name>
+
+# TECHNOLOGY COLOPHON
+
+    This is a blog made with MARBLE.
+
+    MARBLE does its thing with CSS3, HTML5,JavaScript, jQuery, Bootstrap

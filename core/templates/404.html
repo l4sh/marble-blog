@@ -1,0 +1,62 @@
+<!doctype html>
+<html class="no-js" lang="{{blog.lang}}"/>
+
+<head>
+  <meta charset="utf-8"/>
+  <meta http-equiv="x-ua-compatible" content="ie=edge"/>
+  <title>{{blog.title}} - 404 Page not found</title>
+  <meta name="description" content="{{blog.description}}"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+  <meta name="og:site_name" content="{{blog.title}}"/>
+  <meta name="og:title" content="404 Page not found - {{blog.title}}"/>
+  <meta name="og:description" content="The page you're looking for could not be found - {{blog.description}}"/>
+  <meta name="og:type" content="article"/>
+  <meta name="og:url" content="{{blog.url}}"/>
+
+  <meta name="twitter:card" content="summary"/>
+  <meta name="twitter:site" content="{{author.twitterHandle}}"/>
+  <meta name="twitter:title" content="404 Page not found - {{blog.title}}"/>
+  <meta name="twitter:description" content="The page you're looking for could not be found - {{blog.description}}"/>
+
+  <link rel="apple-touch-icon" href="/img/apple-touch-icon.png"/>
+  <!--CSS-->
+  <link rel="stylesheet" href="/css/vendor.min.css"/>
+  <link rel="stylesheet" href="/css/main.min.css"/>
+  <script src="/config.js"></script>
+</head>
+
+<body>
+  <!--[if lt IE 8]>
+    <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+    <![endif]-->
+
+  <div class="container">
+    <div class="jumbotron text-center">
+      <h1><a href="{{blog.url}}">{{blog.title}}</a></h1>
+      <p class="lead hidden-xs hidden-sm">
+        {{blog.subtitle}}
+      </p>
+    </div>
+  </div>
+
+  <div class="container" id="e404-content">
+    <div class="col-md-8 col-md-offset-1">
+      <h1>404 Error: Page Not Found</h1>
+      <p>It seems like the content you are looking for cannot be found...</p>
+      <p>Visit the <a href="index.html">Home Page</a> for more posts.</p>
+    </div>
+  </div>
+
+  <script src="/js/vendor.min.js"></script>
+  <!--<script src="js/404.js"></script>-->
+  <!--Footer-->
+  <footer class="footer">
+    <div class="container">
+      <p>Powered by <a href="https://github.com/l4sh/marble-blog">MARBLE</a>
+      </p>
+    </div>
+  </footer>
+</body>
+
+</html>

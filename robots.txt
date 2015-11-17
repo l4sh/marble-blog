@@ -2,4 +2,5 @@
 
 # Allow crawling of all content
 User-agent: *
-Disallow:
+Disallow: /_posts/
+Disallow: /_drafts/

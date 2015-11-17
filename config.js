@@ -1,7 +1,7 @@
 var config = {
   author: {
-    name: 'MARBLE Author',
-    description: 'I post things, a lot of things',
+    name: 'Marble Man',
+    description: 'I post about a lot of things',
     email: 'email@example.com', // optional
     twitter: 'https://twitter.com/twitter',
     twitterHandle: '@twitter',
@@ -10,9 +10,8 @@ var config = {
 
   blog: {
     title: 'My MARBLE blog',
-    subtitle: 'A MARkdown dynamic BLog Engine',
+    subtitle: 'This is my new blog',
     description: 'This is a blog running MARBLE, if you are the author of this blog you might want to update this information.',
-    license: 'All rights reserved 2015',
     url: 'https://github.com/l4sh/marble-blog',
     lang: 'en',
     postsPerPage: 5,
@@ -32,24 +31,28 @@ var config = {
   editor: 'vim',
 
   layout: {
-    columns: 1,
-    columnSize: [],
-    footer: true,
+    columns: {
+      amount: 2,
+      sizes: [9, 3], // Total must be 12
+      main: 1
+    },
+    extraRows: 'none', // 'top', 'bottom', 'both', 'none'
+    footer: {
+      poweredBy: true, // Show "Powered by MARBLE" text
+      licenseText: 'Copyright © {{author}} {{year}} - All rights reserved'
+    }
   },
 
   plugins: {
     example: {
       enabled: false,
-      area: '#widget-unit'
+      area: '#element-id'
     },
     authorInfo: {
-      enabled: false,
-      area: '#right-sidebar',
-      position: 1,
-      hiddenOnMobile: true
+      enabled: true,
+      area: '#col-2',
     }
   }
-
 };
 
 if (typeof module !== 'undefined' && module.exports) {

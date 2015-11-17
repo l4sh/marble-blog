@@ -13,8 +13,8 @@ function loadPager(position) {
       pagerLeft = 'Newer';
       pagerRight = 'Older';
       break;
-
   }
+  
   var pagerHTML = '<nav><ul class="pager"><li><a class="pager-previous" href="#">';
   pagerHTML += pagerLeft + '</a></li><li><a class="pager-next" href="#">';
   pagerHTML += pagerRight + '</a></li></ul></nav>';

@@ -11,7 +11,8 @@ function parseDate(dateStr) {
 
 //** Join paths **//
 function pathJoin() {
-  return Array.slice(arguments).join('/');
+  var args = Array.prototype.slice.call(arguments);
+  return args.join('/');
 }
 
 //** Get array and object size **//

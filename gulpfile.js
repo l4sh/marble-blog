@@ -41,6 +41,14 @@ function fillChar(length, chars) {
   return (new Array(length).join(chars)).substring(0, length);
 }
 
+// Camelcase to underscore
+function toUnderscore(string) {
+	return string.replace(/([A-Z])/g, function(_1) {
+    return "_"+_1.toLowerCase();
+  });
+};
+
+
 function clearScr() {
   process.stdout.write("\u001b[2J\u001b[0;0H");
 }
@@ -299,15 +307,18 @@ gulp.task('plugins-js', function() {
 
   for (var name in plugins) {
     if (plugins[name].enabled) {
+      name = toUnderscore(name);
       files.push(path.join(name, '**.js'));
     }
   }
 
-  console.log(files);
+  if (!files.length) {
+    fs.writeFileSync('js/plugins.min.js', '')
+  }
+
   gulp.src(files, {
       cwd: 'plugins/'
     })
-    .pipe($.newer('js/plugins.min.js'))
     .pipe($.jshint())
     .pipe($.jshint.reporter('jshint-stylish'))
     .pipe($.concat('plugins.min.js'))
@@ -522,7 +533,7 @@ gulp.task('feeds', function() {
         link: config.blog.url
     }
   });
-  var i= 0;
+
   for (var n in posts) {
 
     feed.addItem({
@@ -596,8 +607,9 @@ gulp.task('delete-published', function() {
 
 
 //** Initial setup **//
-gulp.task('build', ['vendor-js', 'vendor-css', 'main-js', 'main-css',
-                    'install-fonts', 'render-templates', 'sitemap']);
+gulp.task('build', ['vendor-js', 'vendor-css', 'main-js',
+                    'plugins-js', 'main-css', 'install-fonts',
+                    'render-templates', 'sitemap']);
 
 
 //** Default **//

@@ -1,0 +1,14 @@
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+#wrapper {
+  min-height: 100%;
+}

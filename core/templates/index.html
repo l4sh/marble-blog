@@ -25,62 +25,39 @@
   <link rel="stylesheet" href="/css/main.min.css">
   <script src="/config.js"></script>
 </head>
-
 <body>
   <!--[if lt IE 8]>
     <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
     <![endif]-->
-
-  <div class="container">
-    <div class="jumbotron text-center">
-      <h1><a href="/">{{blog.title}}</a></h1>
-      <p class="lead hidden-xs hidden-sm">
-        {{blog.subtitle}}
-      </p>
-    </div>
-  </div>
-
-  <!--Content-->
-  <div class="container">
-    <div class="row">
-      <div class="col-md-9 blog-main">
-        <div class="pager-top">
-          <!--placeholder for pager-->
-        </div>
-        <div id="blog-content">
-          <noscript><p>JavaScript support is necessary to view this blog content</p></noscript>
-        </div>
-        <hr />
-        <div class="pager-bottom">
-          <!--placeholder for pager-->
-        </div>
+  <div id="wrapper">
+    <div class="container">
+      <div class="jumbotron text-center">
+        <h1><a href="/">{{blog.title}}</a></h1>
+        <p class="lead hidden-xs hidden-sm">{{blog.subtitle}}</p>
       </div>
-      <!--/blog-main-->
-      <!--Sidebar-->
-      <div class="col-md-3 hidden-sm">
-        <div class="row">
-          <div class="col-md-12 text-center author-info">
-            <img class="img-circle center-block author-image" src="/images/blog/author.png">
-            <h3 class="author-name">
-              {{author.name}}
-            </h3>
-            <div class="media-links">
-              <!--Media Links-->
-            </div>
-            <p class="author-description">
-              {{author.description}}
-            </p>
+    </div>
+
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12" id="col-content">
+          <div class="pager-top">
+            <!--placeholder for pager-->
+          </div>
+          <div id="blog-content">
+            <noscript><h3>JavaScript support is necessary to view this blog content</h3></noscript>
+          </div>
+          <div class="pager-bottom">
+            <!--placeholder for pager-->
           </div>
         </div>
       </div>
     </div>
   </div>
-  <!--/Sidebar-->
+
   <!--Footer-->
   <footer class="footer">
-    <div class="container">
-      <p>Powered by <a href="https://github.com/l4sh/marble-blog">MARBLE</a>
-      </p>
+    <div class="container text-center" id="footer-content">
+      <p id="powered-by">Powered by <a href="https://github.com/l4sh/marble-blog">MARBLE</a></p>
     </div>
   </footer>
   <!-- end AppContent -->
@@ -88,6 +65,7 @@
   <!-- Load JavaScript -->
   <script src="/js/vendor.min.js"></script>
   <script src="/js/main.min.js"></script>
+  <script src="/js/plugins.min.js"></script>
 
   <!-- Google Analytics: change UA-XXXXX-X to be your site's ID. ->
   <script>
